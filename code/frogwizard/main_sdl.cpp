@@ -20,6 +20,6 @@ extern "C" int main(int argc, char** arv) {
     }
 
     frogboy::destroy();
-	return 0;
+    return 0;
 }
 #endif

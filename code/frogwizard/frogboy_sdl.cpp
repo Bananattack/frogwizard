@@ -60,7 +60,7 @@ namespace frogboy {
         uint32_t white = SDL_MapRGBA(backSurface->format, 255, 255, 255, 0);
         uint32_t* surfaceRowPtr = static_cast<uint32_t*>(backSurface->pixels);
         for(size_t y = 0; y != SCREEN_HEIGHT; ++y) {
-			uint32_t* ptr = surfaceRowPtr;
+            uint32_t* ptr = surfaceRowPtr;
             for(size_t x = 0; x != SCREEN_WIDTH; ++x) {
                 size_t shift = y % 8;
                 size_t bufferRow = y / 8;
@@ -72,13 +72,13 @@ namespace frogboy {
         }
         SDL_UnlockSurface(backSurface);
 
-		SDL_FillRect(windowSurface, NULL, black);
+        SDL_FillRect(windowSurface, NULL, black);
 
         SDL_Rect destRect;
         destRect.x = 0;
         destRect.y = 0;
         destRect.w = SCREEN_WIDTH * SCREEN_SCALE;
-        destRect.h = SCREEN_HEIGHT * SCREEN_SCALE;		
+        destRect.h = SCREEN_HEIGHT * SCREEN_SCALE;        
         SDL_BlitScaled(backSurface, nullptr, windowSurface, &destRect);
 
         SDL_UpdateWindowSurface(window);
