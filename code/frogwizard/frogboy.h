@@ -47,14 +47,11 @@ namespace frogboy {
 
     namespace frogboy {
         template<typename T> T readRom(const T* ptr) {
-            return static_cast<T>(pgm_read_word(ptr));
-        }    
-        template<> uint8_t readRom(const uint8_t* ptr) {
-            return pgm_read_byte(ptr);
-        }
-        template<> uint8_t readRom(const int8_t* ptr) {
-            return static_cast<int8_t>(pgm_read_byte(ptr));
-        }
+            return reinterpret_cast<T>(pgm_read_word(ptr));
+        }        
+        template<> char readRom(const char* ptr);
+        template<> uint8_t readRom(const uint8_t* ptr);
+        template<> int8_t readRom(const int8_t* ptr);
     }
 #else
     #define FROGBOY_ROM_DATA

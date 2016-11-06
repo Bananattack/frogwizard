@@ -80,5 +80,17 @@ namespace frogboy {
     int getRandom(int min, int max) {
         return random(min, max);
     }
+
+    template<> char readRom(const char* ptr) {
+        return static_cast<char>(pgm_read_byte(ptr));
+    }
+
+    template<> uint8_t readRom(const uint8_t* ptr) {
+        return pgm_read_byte(ptr);
+    }
+
+    template<> int8_t readRom(const int8_t* ptr) {
+        return static_cast<int8_t>(pgm_read_byte(ptr));
+    }    
 }
 #endif

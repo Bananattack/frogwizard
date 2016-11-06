@@ -1,3 +1,4 @@
+#include "frogboy.h"
 #include "game.h"
 
 void setup() {
