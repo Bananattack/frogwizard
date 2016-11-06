@@ -1,11 +1,11 @@
-#include <stdlib.h>
-#include <Arduino.h>
+#include <string.h>
+
+#include "frogboy.h"
 #include "player.h"
 #include "sprite.h"
 #include "bullet.h"
 #include "hitbox.h"
 #include "particle.h"
-#include "arduboyx.h"
 #include "sprites_bitmap.h"
 
 enum {
@@ -56,8 +56,8 @@ void playerUpdate() {
 
     entityUpdate(ENT_OFFSET_PLAYER);
 
-    bool left = arduboy.pressed(LEFT_BUTTON);
-    bool right = arduboy.pressed(RIGHT_BUTTON);
+    bool left = frogboy::isPressed(frogboy::BUTTON_LEFT);
+    bool right = frogboy::isPressed(frogboy::BUTTON_RIGHT);
     if(left && right) {
         left = right = false;
     }
@@ -85,7 +85,7 @@ void playerUpdate() {
         player.shootTimer--;
     }
 
-    if(arduboy.pressed(A_BUTTON)) {
+    if(frogboy::isPressed(frogboy::BUTTON_SHOOT)) {
         if(!player.shootPressed) {
             player.bufferShootTimer = PLAYER_SHOOT_INPUT_BUFFER_TIME;
             player.shootPressed = true;
@@ -106,7 +106,7 @@ void playerUpdate() {
         }
     }
 
-    if(arduboy.pressed(B_BUTTON)) {
+    if(frogboy::isPressed(frogboy::BUTTON_JUMP)) {
         if(!player.jumpPressed) {
             player.bufferJumpTimer = PLAYER_JUMP_INPUT_BUFFER_TIME;
             player.jumpPressed = true;
@@ -188,12 +188,12 @@ void playerDraw() {
 void playerDrawHUD() {
     uint8_t h;
     for(h = 0; h < player.maxHP; ++h) {
-        arduboy.drawTile(2 + h * 8, 3, spritesBitmap, 0x40, 0, false, false);
+        frogboy::drawTile(2 + h * 8, 3, spritesBitmap, 0x40, 0, false, false);
     }
     for(h = 0; h < player.hp; ++h) {
-        arduboy.drawTile(2 + h * 8, 2, spritesBitmap, 0x40, 1, false, false);
+        frogboy::drawTile(2 + h * 8, 2, spritesBitmap, 0x40, 1, false, false);
     }
     for(; h < player.maxHP; ++h) {
-        arduboy.drawTile(2 + h * 8, 2, spritesBitmap, 0x41, 1, false, false);
+        frogboy::drawTile(2 + h * 8, 2, spritesBitmap, 0x41, 1, false, false);
     }    
 }

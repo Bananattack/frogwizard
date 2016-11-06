@@ -1,5 +1,5 @@
-#include <avr/pgmspace.h>
 #include <string.h>
+#include "frogboy.h"
 #include "critter.h"
 #include "sprite.h"
 #include "hitbox.h"
@@ -7,9 +7,9 @@
 Critter critters[ENT_COUNT_CRITTER];
 
 typedef void (*CritterHandler)(uint8_t critterIndex);
-extern const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] PROGMEM;
-extern const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] PROGMEM;
-extern const CritterHandler critterUpdateHandler[(int) CRITTER_TYPE_COUNT] PROGMEM;
+extern const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const CritterHandler critterUpdateHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 
 void critterInitSystem() {
     memset(critters, 0, sizeof(critters));
@@ -24,7 +24,7 @@ uint8_t critterAdd(int16_t x, int16_t y, CritterType type) {
 
         memset(critter, 0, sizeof(Critter));
         critter->type = (uint8_t) type;
-        ((CritterHandler) pgm_read_word(&critterInitHandler[critter->type]))(critterIndex);
+        frogboy::readRom<CritterHandler>(&critterInitHandler[critter->type])(critterIndex);
         return critterIndex;
     }
 
@@ -45,7 +45,7 @@ void critterUpdateAll() {
             entityUpdate(entityIndex);
 
             Critter* critter = &critters[critterIndex];
-            ((CritterHandler) pgm_read_word(&critterUpdateHandler[critter->type]))(critterIndex);
+            frogboy::readRom<CritterHandler>(&critterUpdateHandler[critter->type])(critterIndex);
         }
     }
 }
@@ -102,17 +102,17 @@ void walkerUpdate(uint8_t critterIndex) {
     }
 }
 
-const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] PROGMEM = {
+const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     0,
     1,
 };
 
-const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] PROGMEM = {
+const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinInit,
     walkerInit,
 };
 
-const CritterHandler critterUpdateHandler[(int) CRITTER_TYPE_COUNT] PROGMEM = {
+const CritterHandler critterUpdateHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinUpdate,
     walkerUpdate,
 };

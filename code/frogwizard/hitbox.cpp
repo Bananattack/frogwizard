@@ -1,7 +1,8 @@
+#include "frogboy.h"
 #include "hitbox.h"
 
 // x y w h
-static const int8_t PROGMEM hitboxData[(int) HITBOX_TYPE_COUNT * 4] = {
+static const int8_t hitboxData[(int) HITBOX_TYPE_COUNT * 4] FROGBOY_ROM_DATA = {
     0, 0, 0, 0,
     0, 0, 16, 16,
     0, 0, 8, 8,
@@ -28,8 +29,8 @@ bool hitboxCollide(int16_t xa, int16_t ya, HitboxType hitboxA, int8_t borderA, i
 
 void hitboxGetData(HitboxType hitbox, int8_t* x, int8_t* y, int8_t* w, int8_t* h) {
     const int8_t* hitboxPtr = hitboxData + (uint16_t) hitbox * 4;
-    *x = pgm_read_byte(hitboxPtr++);
-    *y = pgm_read_byte(hitboxPtr++);
-    *w = pgm_read_byte(hitboxPtr++);
-    *h = pgm_read_byte(hitboxPtr++);
+    *x = frogboy::readRom<int8_t>(hitboxPtr++);
+    *y = frogboy::readRom<int8_t>(hitboxPtr++);
+    *w = frogboy::readRom<int8_t>(hitboxPtr++);
+    *h = frogboy::readRom<int8_t>(hitboxPtr++);
 }

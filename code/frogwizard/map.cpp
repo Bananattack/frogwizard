@@ -1,7 +1,5 @@
-#include <avr/pgmspace.h>
-
+#include "frogboy.h"
 #include "map.h"
-#include "arduboyx.h"
 #include "sprites_bitmap.h"
 
 uint8_t mapCurrentIndex;
@@ -22,7 +20,7 @@ enum {
 };
 
 // The series of 2x2 arrangements of tiles.
-const uint8_t blockTiles[] PROGMEM = {
+const uint8_t blockTiles[] FROGBOY_ROM_DATA = {
     0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x45, 0x45, // brick 1/2 floor
     0x45, 0x45, 0x00, 0x00, // brick 1/2 ceiling
@@ -33,7 +31,7 @@ const uint8_t blockTiles[] PROGMEM = {
 };
 
 // The attributes of each block.
-const uint8_t blockAttributes[] PROGMEM = {
+const uint8_t blockAttributes[] FROGBOY_ROM_DATA = {
     0, 0, 0, 0,
     0, 0, BLOCK_ATTR_OBS_TYPE_SOLID, BLOCK_ATTR_OBS_TYPE_SOLID, 
     BLOCK_ATTR_OBS_TYPE_SOLID, BLOCK_ATTR_OBS_TYPE_SOLID, 0, 0, 
@@ -44,7 +42,7 @@ const uint8_t blockAttributes[] PROGMEM = {
 };
 
 // The series of unique 1x4 arrangements of blocks
-const uint8_t columnBlocks[] PROGMEM = {
+const uint8_t columnBlocks[] FROGBOY_ROM_DATA = {
     0, 0, 0, 0, // empty
     0, 0, 3, 6, // wall 2 on dirt floor 1 
     0, 3, 3, 6, // wall 3 on dirt floor 1
@@ -59,18 +57,18 @@ const uint8_t columnBlocks[] PROGMEM = {
     0, 5, 6, 6, // dirt floor \ 2 to 3
 };
 
-const uint8_t castleMap[] PROGMEM = {
+const uint8_t castleMap[] FROGBOY_ROM_DATA = {
     8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 5, 9, 10, 10, 10, 10, 11, 6, 6, 6, 7, 8, 8, 8, 8, 8, 8, 1, 8, 8, 2, 8, 8, 1, 8, 8, 8, 5, 6, 6, 6, 6, 6, 3, 6, 7, 8, 8, 8, 8, 8, 8, 5, 6, 7, 8, 5, 6, 6, 7, 8, 8, 8, 8, 8,
 };
 
 // Table of pointers to each map.
 // Every map is comprised of a big sequence of column references.
-const uint8_t* const mapAddresses[(uint8_t) MAP_TYPE_COUNT] PROGMEM = {
+const uint8_t* const mapAddresses[static_cast<uint8_t>(MAP_TYPE_COUNT)] FROGBOY_ROM_DATA = {
     castleMap
 };
 
 // The width of each map. Can be up to 256 tiles wide
-const uint8_t mapWidths[(uint8_t) MAP_TYPE_COUNT] PROGMEM = {
+const uint8_t mapWidths[static_cast<uint8_t>(MAP_TYPE_COUNT)] FROGBOY_ROM_DATA = {
     sizeof(castleMap),
 };
 
@@ -83,7 +81,7 @@ void mapInitSystem() {
 }
 
 uint8_t mapGetPixelAttribute(int16_t x, int16_t y) {
-    int16_t mapTileWidth = (int16_t) pgm_read_byte(mapWidths + mapCurrentIndex);
+    int16_t mapTileWidth = static_cast<int16_t>(frogboy::readRom<uint8_t>(mapWidths + mapCurrentIndex));
     int16_t mapPixelWidth = mapTileWidth * 16;
 
     if(x < 0 || x >= mapPixelWidth) {
@@ -97,13 +95,13 @@ uint8_t mapGetPixelAttribute(int16_t x, int16_t y) {
         y = 0;
     }
 
-    uint8_t col = (uint8_t) (x / 16);
-    uint8_t row = (uint8_t) (y / 16);
+    uint8_t col = static_cast<uint8_t>(x / 16);
+    uint8_t row = static_cast<uint8_t>(y / 16);
 
-    const uint8_t* mapPtr = (const uint8_t*) pgm_read_word(mapAddresses + mapCurrentIndex);
-    const uint8_t* columnPtr = columnBlocks + (uint16_t) pgm_read_byte(mapPtr + col) * 4;
-    const uint8_t* blockAttrPtr = blockAttributes + (uint16_t) pgm_read_byte(columnPtr + row) * 4;
-    return pgm_read_byte(blockAttrPtr + (x % 16 < 8 ? 0 : 1) + (y % 16 < 8 ? 0 : 2));
+    const uint8_t* mapPtr = frogboy::readRom<const uint8_t*>(mapAddresses + mapCurrentIndex);
+    const uint8_t* columnPtr = columnBlocks + static_cast<uint16_t>(frogboy::readRom<uint8_t>(mapPtr + col) * 4);
+    const uint8_t* blockAttrPtr = blockAttributes + static_cast<uint16_t>(frogboy::readRom<uint8_t>(columnPtr + row) * 4);
+    return frogboy::readRom<uint8_t>(blockAttrPtr + (x % 16 < 8 ? 0 : 1) + (y % 16 < 8 ? 0 : 2));
 }
 
 bool mapGetPixelAttributeObs(uint8_t attr, int16_t x, int16_t y) {
@@ -127,8 +125,8 @@ bool mapGetPixelObs(int16_t x, int16_t y) {
 void mapDraw() {
     int16_t drawX = -((mapCameraX % 16 + 16) % 16);
     int16_t startColumn = mapCameraX / 16;
-    uint8_t columnCount = WIDTH / 16 + 2;
-    uint8_t mapTileWidth = pgm_read_byte(mapWidths + mapCurrentIndex);
+    uint8_t columnCount = frogboy::SCREEN_WIDTH / 16 + 2;
+    uint8_t mapTileWidth = frogboy::readRom<uint8_t>(mapWidths + mapCurrentIndex);
 
     if(mapTileWidth == 0) {
         return;
@@ -141,27 +139,27 @@ void mapDraw() {
         startColumn = 255;
     }
 
-    uint8_t clampedStartColumn = (uint8_t) startColumn;
+    uint8_t clampedStartColumn = static_cast<uint8_t>(startColumn);
 
-    if((uint8_t) clampedStartColumn > mapTileWidth - columnCount) {
-        columnCount = mapTileWidth - (uint8_t) clampedStartColumn;
+    if(static_cast<uint8_t>(clampedStartColumn) > mapTileWidth - columnCount) {
+        columnCount = mapTileWidth - static_cast<uint8_t>(clampedStartColumn);
     }
 
-    const uint8_t* mapPtr = (const uint8_t*) pgm_read_word(mapAddresses + mapCurrentIndex) + clampedStartColumn;
+    const uint8_t* mapPtr = frogboy::readRom<const uint8_t*>(mapAddresses + mapCurrentIndex) + clampedStartColumn;
     for(uint8_t col = 0; col != columnCount; ++col) {
         int16_t drawY = mapCameraY;
 
-        const uint8_t* columnPtr = columnBlocks + (uint16_t) pgm_read_byte(mapPtr++) * 4;
+        const uint8_t* columnPtr = columnBlocks + static_cast<uint16_t>(frogboy::readRom<uint8_t>(mapPtr++) * 4);
 
         for(uint8_t row = 0; row != 4; ++row) {
-            uint16_t blockIndex = (uint16_t) pgm_read_byte(columnPtr++) * 4;
+            uint16_t blockIndex = static_cast<uint16_t>(frogboy::readRom<uint8_t>(columnPtr++) * 4);
             const uint8_t* blockTilePtr = blockTiles + blockIndex;
             const uint8_t* blockAttrPtr = blockAttributes + blockIndex;
 
             for(uint8_t i = 0; i != 4; ++i) {
-                uint8_t tile = pgm_read_byte(blockTilePtr++);
-                uint8_t attr = pgm_read_byte(blockAttrPtr++);
-                arduboy.drawTile(drawX + (i % 2 == 0 ? 0 : 8), drawY + (i / 2 == 0 ? 0 : 8), spritesBitmap, tile, 1, (attr & BLOCK_ATTR_HFLIP) != 0, (attr & BLOCK_ATTR_VFLIP) != 0);
+                uint8_t tile = frogboy::readRom<uint8_t>(blockTilePtr++);
+                uint8_t attr = frogboy::readRom<uint8_t>(blockAttrPtr++);
+                frogboy::drawTile(drawX + (i % 2 == 0 ? 0 : 8), drawY + (i / 2 == 0 ? 0 : 8), spritesBitmap, tile, 1, (attr & BLOCK_ATTR_HFLIP) != 0, (attr & BLOCK_ATTR_VFLIP) != 0);
             }
 
             drawY += 16;
@@ -172,5 +170,5 @@ void mapDraw() {
 }
 
 uint8_t mapGetWidth() {
-    return pgm_read_byte(mapWidths + mapCurrentIndex);
+    return frogboy::readRom<uint8_t>(mapWidths + mapCurrentIndex);
 }

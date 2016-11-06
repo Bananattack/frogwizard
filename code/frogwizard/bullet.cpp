@@ -1,7 +1,6 @@
-#include <avr/pgmspace.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Arduino.h>
+#include "frogboy.h"
 #include "bullet.h"
 #include "player.h"
 #include "sprite.h"
@@ -11,8 +10,8 @@
 Bullet bullets[ENT_COUNT_BULLET];
 
 typedef void (*BulletHandler)(uint8_t bulletIndex);
-extern const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] PROGMEM;
-extern const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] PROGMEM;
+extern const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 
 void bulletInitSystem() {
     memset(bullets, 0, sizeof(bullets));
@@ -32,7 +31,7 @@ uint8_t bulletAdd(int16_t x, int16_t y, bool dir, BulletType type) {
         ent->hitbox = HITBOX_TYPE_BULLET_16x16;
         ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_SLOPES;
         ent->drawFlags |= (dir ? ENT_DRAW_FLAG_HFLIP : 0);
-        ((BulletHandler) pgm_read_word(&bulletInitHandler[bullet->type]))(bulletIndex);
+        frogboy::readRom<BulletHandler>(&bulletInitHandler[bullet->type])(bulletIndex);
         return bulletIndex;
     }
 
@@ -53,7 +52,7 @@ void bulletUpdateAll() {
             entityUpdate(entityIndex);
 
             Bullet* bullet = &bullets[bulletIndex];
-            ((BulletHandler) pgm_read_word(&bulletUpdateHandler[bullet->type]))(bulletIndex);
+            frogboy::readRom<BulletHandler>(&bulletUpdateHandler[bullet->type])(bulletIndex);
         }
     }
 }
@@ -125,12 +124,12 @@ void explosionUpdate(uint8_t bulletIndex) {
     bullet->timer++;
 }
 
-const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] PROGMEM = {
+const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
     fireballInit,
     explosionInit,
 };
 
-const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] PROGMEM = {
+const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
     fireballUpdate,
     explosionUpdate,
 };

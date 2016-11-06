@@ -68,10 +68,10 @@ if __name__ == '__main__':
 
             f.write('#ifndef ' + identifier.upper() + '_BITMAP_H\n')
             f.write('#define ' + identifier.upper() + '_BITMAP_H\n\n')
-            f.write('#include <avr/pgmspace.h>\n')
             f.write('#include <stdint.h>\n\n')
+            f.write('#include "frogboy.h"\n\n')
             f.write('#define ' + identifier.upper() + '_BITMAP_LEN ' + str(len(chrdata)) + '\n')
-            f.write('extern const uint8_t ' + lower_camel_identifier + 'Bitmap[' + identifier.upper() + '_BITMAP_LEN] PROGMEM;\n')
+            f.write('extern const uint8_t ' + lower_camel_identifier + 'Bitmap[' + identifier.upper() + '_BITMAP_LEN] FROGBOY_ROM_DATA;\n')
             f.write('#endif\n')
             f.close()
             print('  ' + filename + ' -> ' + header_filename)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                 exit('Failure attempting to write ' + body_filename)
             
             f.write('#include "' + header_filename + '"\n\n')
-            f.write('const uint8_t ' + lower_camel_identifier + 'Bitmap[' + identifier.upper() + '_BITMAP_LEN] PROGMEM = {')
+            f.write('const uint8_t ' + lower_camel_identifier + 'Bitmap[' + identifier.upper() + '_BITMAP_LEN] FROGBOY_ROM_DATA = {')
             for i, v in enumerate(chrdata):
                 f.write(('\n    ' if i % 8 == 0 else ' ') + '0x{:02X}'.format(v) + ',')
             f.write('\n};\n')

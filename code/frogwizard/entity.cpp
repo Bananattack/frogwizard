@@ -61,10 +61,8 @@ void entityUpdate(uint8_t entityIndex) {
     if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
         if((ent->controlFlags & ENT_CTRL_FLAG_IGNORE_OBS) != 0) {
             ent->x += ent->xspd;
-            ent->y += ent->yspd;            
+            ent->y += ent->yspd;
         } else {
-            int8_t xspd = ent->xspd;
-
             int8_t hx, hy, hw, hh;
             hitboxGetData((HitboxType) ent->hitbox, &hx, &hy, &hw, &hh);
 
@@ -73,17 +71,17 @@ void entityUpdate(uint8_t entityIndex) {
             int8_t maxSlope = (ent->controlFlags & ENT_CTRL_FLAG_IGNORE_SLOPES) != 0 ? 0 : ENT_MAXIMUM_SLOPE;
 
             ent->status &= ~(ENT_STATUS_HIT_OBS_X | ENT_STATUS_HIT_OBS_Y);
-            if((xspd < 0
+            if((ent->xspd < 0
                 && !mapGetPixelObs(checkPixelX - 1, checkPixelY)
                 && !mapGetPixelObs(checkPixelX - 1, checkPixelY + hh / 2)
-                && !mapGetPixelObs(checkPixelX - 1, checkPixelY - (maxSlope * -xspd / 16) + hh - 1 - maxSlope))
-            || (xspd > 0
+                && !mapGetPixelObs(checkPixelX - 1, checkPixelY - (maxSlope * -ent->xspd / 16) + hh - 1 - maxSlope))
+            || (ent->xspd > 0
                 && !mapGetPixelObs(checkPixelX + hw, checkPixelY)
                 && !mapGetPixelObs(checkPixelX + hw, checkPixelY + hh / 2)
-                && !mapGetPixelObs(checkPixelX + hw, checkPixelY - (maxSlope * xspd / 16) + hh - 1 - maxSlope))) {
-                ent->x += xspd;
+                && !mapGetPixelObs(checkPixelX + hw, checkPixelY - (maxSlope * ent->xspd / 16) + hh - 1 - maxSlope))) {
+                ent->x += ent->xspd;
                 if(ent->yspd == 0 && (ent->controlFlags & ENT_CTRL_FLAG_IGNORE_SLOPES) == 0 && !detectFloor(ent, hx, hy, hw, hh)) {
-                    int16_t descent = abs(xspd) * ENT_MAXIMUM_SLOPE;
+                    int16_t descent = abs(ent->xspd) * ENT_MAXIMUM_SLOPE;
                     if(descent >= ENT_MAXIMUM_SLOPE * 16) {
                         descent = ENT_MAXIMUM_SLOPE * 16;
                     }
@@ -157,7 +155,7 @@ bool entityCollide(uint8_t entityIndexA, int8_t borderA, uint8_t entityIndexB, i
     Entity* entB = &ents[entityIndexB];
     if((entA->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
     && (entB->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
-        return hitboxCollide(entA->x / 16, entA->y / 16, (HitboxType) entA->hitbox, entB->x / 16, entB->y / 16, (HitboxType) entB->hitbox);
+        return hitboxCollide(entA->x / 16, entA->y / 16, (HitboxType) entA->hitbox, 0, entB->x / 16, entB->y / 16, (HitboxType) entB->hitbox, 0);
     }    
     return false;
 }
