@@ -13,6 +13,7 @@ namespace {
     SDL_Texture* screenTexture = nullptr;
     SDL_Surface* screenSurface = nullptr;
     uint8_t screenBuffer[frogboy::SCREEN_WIDTH * (frogboy::SCREEN_HEIGHT / 8)];
+    uint32_t deltaTime = 0;
     uint32_t lastFrame = 0;
 
     const uint8_t SCREEN_SCALE = 8;
@@ -86,6 +87,7 @@ namespace frogboy {
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, screenTexture, NULL, NULL);
         SDL_RenderPresent(renderer);
+        SDL_Delay(10);
     }
 
     bool waitForFrame() {
@@ -159,8 +161,14 @@ namespace frogboy {
 
         if(open) {
             uint32_t timer = SDL_GetTicks();
-            if(timer - lastFrame > 16) {
-                lastFrame = timer;
+            deltaTime += timer - lastFrame;
+            lastFrame = timer;
+
+            if(deltaTime >= 48) {
+                deltaTime = 48;
+            }
+            if(deltaTime > 16) {
+                deltaTime -= 16;
                 return true;
             }
         }
