@@ -29,6 +29,10 @@ enum {
     PLAYER_SHOOT_COOLDOWN = 7,
     PLAYER_SHOOT_MAX_SHOTS = 2,
     PLAYER_SHOOT_INPUT_BUFFER_TIME = 16,
+
+    PLAYER_HURT_DURATION = 60,
+    PLAYER_HURT_BLINK_INTERVAL = 4,
+    PLAYER_HURT_STOP_CONTROL_DURATION = 16,
 };
 
 Player player;
@@ -43,7 +47,7 @@ void playerAdd(int16_t x, int16_t y) {
         ent->sprite = (uint8_t) SPRITE_TYPE_PLAYER_1;
         ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
 
-        player.hp = 1;
+        player.hp = PLAYER_MAX_HP_START;
         player.maxHP = PLAYER_MAX_HP_START;
         player.shotCount = 0;
         player.maxShotCount = PLAYER_SHOOT_MAX_SHOTS;
@@ -60,6 +64,17 @@ void playerUpdate() {
     bool right = frogboy::isPressed(frogboy::BUTTON_RIGHT);
     if(left && right) {
         left = right = false;
+    }
+
+    ent->drawFlags &= ~ENT_DRAW_FLAG_HIDDEN;
+    if(player.hurtTimer > 0) {
+        player.hurtTimer--;
+        if(player.hurtTimer % (PLAYER_HURT_BLINK_INTERVAL * 2) < PLAYER_HURT_BLINK_INTERVAL) {
+            ent->drawFlags |= ENT_DRAW_FLAG_HIDDEN;
+        }
+        if(player.hurtTimer > PLAYER_HURT_DURATION - PLAYER_HURT_STOP_CONTROL_DURATION)  {
+            left = right = false;
+        }
     }
     
     if(left) {
@@ -145,16 +160,18 @@ void playerUpdate() {
                 ent->yspd = PLAYER_FALL_MAX_YSPEED;
             }
             player.landed = false;
-            player.falling = true;
+            if(player.fallDuration < 255) {
+                player.fallDuration++;
+            }
         } else {
             if(!player.landed) {
                 player.landed = true;
                 ent->yspd = 0;
 
-                if(player.falling) {
-                    player.falling = false;
+                if(player.fallDuration > 16) {                    
                     particleStarAdd(ent->x + 10 * 16, ent->y + 4 * 16);
                 }
+                player.fallDuration = 0;
             }
         }
     }
@@ -174,10 +191,29 @@ void playerUpdate() {
         ent->drawFlags &= ~ENT_DRAW_FLAG_HFLIP;
     }
 
-    if(player.jumpTimer != 0 || player.falling) {
+    if(player.jumpTimer != 0 || player.fallDuration > 0) {
         ent->sprite = SPRITE_TYPE_PLAYER_2;
     } else {
         ent->sprite = player.timer < 1 || player.timer >= 9 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2;
+    }
+}
+
+void playerHurt() {
+    if(player.hurtTimer == 0) {
+        Entity* ent = &ents[ENT_OFFSET_PLAYER];
+
+        if(player.hp > 0) {
+            player.hp--;
+        }
+
+        player.hurtTimer = PLAYER_HURT_DURATION;
+        if(player.dir) {
+            ent->xspd = -40;            
+        } else {
+            ent->xspd = 40;
+        }
+        ent->yspd = 0;
+        player.jumpTimer = 0;
     }
 }
 

@@ -2,6 +2,7 @@
 #include "frogboy.h"
 #include "critter.h"
 #include "sprite.h"
+#include "player.h"
 #include "hitbox.h"
 
 Critter critters[ENT_COUNT_CRITTER];
@@ -74,7 +75,6 @@ void walkerInit(uint8_t critterIndex) {
     ent->sprite = (uint8_t) SPRITE_TYPE_WALKER_1;
 }
 
-
 void walkerUpdate(uint8_t critterIndex) {
     uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
     Entity* ent = &ents[entityIndex];
@@ -87,7 +87,7 @@ void walkerUpdate(uint8_t critterIndex) {
             ? (uint8_t) SPRITE_TYPE_WALKER_1
             : (uint8_t) SPRITE_TYPE_WALKER_2;
     }
-
+    
     ent->xspd += critter->var[1] ? WALKER_ACCEL : -WALKER_ACCEL;
     if(ent->xspd < -WALKER_MAX_SPEED) {
         ent->xspd = -WALKER_MAX_SPEED;
@@ -99,6 +99,10 @@ void walkerUpdate(uint8_t critterIndex) {
     if((ent->status & ENT_STATUS_HIT_OBS_X) != 0) {
         critter->var[1] ^= 1;
         ent->drawFlags ^= ENT_DRAW_FLAG_HFLIP;
+    }
+
+    if(entityCollide(entityIndex, -3, ENT_OFFSET_PLAYER, -3)) {
+        playerHurt();
     }
 }
 
