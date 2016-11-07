@@ -2,6 +2,7 @@
 #define SPRITES_BITMAP_H
 
 #include <stdint.h>
+
 #include "frogboy.h"
 
 #define SPRITES_BITMAP_LEN 4096

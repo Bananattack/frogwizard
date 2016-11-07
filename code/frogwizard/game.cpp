@@ -4,7 +4,13 @@
 #include "critter.h"
 #include "player.h"
 #include "particle.h"
+#include "sprites_bitmap.h"
 #include "map.h"
+
+bool pausePressed = false;
+bool gamePaused = false;
+
+const char pauseMessage[] FROGBOY_ROM_DATA = "PAUSED";
 
 void gameInit() {
     mapInitSystem();
@@ -15,7 +21,9 @@ void gameInit() {
 
     playerAdd(32 * 16, 32 * 16);
     critterAdd(144 * 16, 16 * 16, CRITTER_TYPE_WALKER);
+    critterAdd(384 * 16, 16 * 16, CRITTER_TYPE_WALKER);
     player.dir = true;
+    pausePressed = true;
 }
 
 enum {
@@ -26,13 +34,38 @@ enum {
 void gameDraw() {
     mapDraw();
     particleDrawAll();
-    critterDrawAll();    
+    critterDrawAll();
     playerDraw(); 
-    bulletDrawAll();
+    bulletDrawAll();   
+    if(gamePaused) {
+        for(uint8_t i = 0; i != sizeof(pauseMessage) + 1; ++i) {
+            frogboy::drawTile(32 + i * 8, 24, spritesBitmap, 0x4A, 0, false, false);
+        }
+        frogboy::printRomString(40, 24, spritesBitmap, pauseMessage, 1);
+    }
+
     playerDrawHUD();
+}
+        
+void gameUpdatePaused() {
+
 }
 
 void gameUpdate() {    
+    if(frogboy::isPressed(frogboy::BUTTON_PAUSE)) {
+        if(!pausePressed) {
+            pausePressed = true;
+            gamePaused = !gamePaused;
+        }
+    } else {
+        pausePressed = false;
+    }
+
+    if(gamePaused) {
+        gameUpdatePaused();
+        return;
+    }
+
     particleUpdateAll();
     critterUpdateAll();
     bulletUpdateAll();

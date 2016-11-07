@@ -58,7 +58,7 @@ void bulletUpdateAll() {
             uint8_t damage = frogboy::readRom<uint8_t>(&bulletDamage[bullet->type]);
             if(damage > 0) {
                 for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
-                    if(entityCollide(entityIndex, 3, ENT_OFFSET_CRITTER + bulletIndex, 3)) {
+                    if(entityCollide(entityIndex, 3, ENT_OFFSET_CRITTER + critterIndex, 3)) {
                         critterHurt(critterIndex, damage);
                         bullet->flags |= BULLET_FLAG_HURT_TARGET;
                         break;

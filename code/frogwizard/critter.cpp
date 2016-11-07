@@ -92,7 +92,7 @@ void coinUpdate(uint8_t critterIndex) {}
 
 enum {
     WALKER_ACCEL = 2,
-    WALKER_MAX_SPEED = 16,
+    WALKER_MAX_SPEED = 12,
 };
 
 void walkerInit(uint8_t critterIndex) {

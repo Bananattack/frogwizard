@@ -30,6 +30,7 @@ namespace {
         SDLK_DOWN, 
         SDLK_z,
         SDLK_x,
+        SDLK_ESCAPE,
         SDLK_r,
     };
 }
