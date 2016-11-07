@@ -7,17 +7,18 @@
 #include "frogboy.h"
 
 namespace {
-    bool open = false;
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* screenTexture = nullptr;
     SDL_Surface* screenSurface = nullptr;
     uint8_t screenBuffer[frogboy::SCREEN_WIDTH * (frogboy::SCREEN_HEIGHT / 8)];
+
     uint32_t deltaTime = 0;
     uint32_t lastFrame = 0;
 
     const uint8_t SCREEN_SCALE = 8;
 
+    bool windowOpen = false;
     bool windowMaximized = false;
 
     bool pressed[static_cast<size_t>(frogboy::BUTTON_COUNT)];
@@ -50,10 +51,11 @@ namespace frogboy {
         memset(pressed, 0, sizeof(pressed));
 
         windowMaximized = false;
-        open = true;
+        windowOpen = true;
     }
 
     void destroy() {
+        SDL_DestroyTexture(screenTexture);
         SDL_FreeSurface(screenSurface);
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -91,7 +93,7 @@ namespace frogboy {
     }
 
     bool waitForFrame() {
-        if(!open) {
+        if(!windowOpen) {
             return false;
         }
 
@@ -102,7 +104,7 @@ namespace frogboy {
             while(SDL_PollEvent(&e) != 0) {
                 switch(e.type) {
                     case SDL_QUIT:
-                        open = false;
+                        windowOpen = false;
                         break;
                     case SDL_KEYDOWN:
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
@@ -160,7 +162,7 @@ namespace frogboy {
             }
         }
 
-        if(open) {
+        if(windowOpen) {
             uint32_t timer = SDL_GetTicks();
             deltaTime += timer - lastFrame;
             lastFrame = timer;
@@ -178,7 +180,7 @@ namespace frogboy {
     }
 
     bool isActive() {
-        return open;
+        return windowOpen;
     }    
 
     uint8_t reverseBits(uint8_t value) {

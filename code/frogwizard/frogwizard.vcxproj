@@ -150,7 +150,7 @@
     <ClCompile Include="frogboy_sdl.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="hitbox.cpp" />
-    <ClCompile Include="main_sdl.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="map.cpp" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="player.cpp" />
