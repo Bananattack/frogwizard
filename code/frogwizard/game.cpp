@@ -60,4 +60,8 @@ void gameUpdate() {
     if(mapCameraX >= mapGetWidth() * 16 - frogboy::SCREEN_WIDTH) {
         mapCameraX = mapGetWidth() * 16 - frogboy::SCREEN_WIDTH;
     }
+
+    if(frogboy::isPressed(frogboy::BUTTON_RESET)) {
+        gameInit();
+    }
 }

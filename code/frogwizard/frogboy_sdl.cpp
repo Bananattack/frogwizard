@@ -30,6 +30,7 @@ namespace {
         SDLK_DOWN, 
         SDLK_z,
         SDLK_x,
+        SDLK_r,
     };
 }
 
@@ -79,8 +80,7 @@ namespace frogboy {
                 *ptr = ((screenBuffer[bufferRow * SCREEN_WIDTH + x] >> shift) & 1) == 0 ? black : white;
                 ptr++;
             }
-            surfaceRowPtr = static_cast<uint32_t*>(static_cast<void*>(
-                    static_cast<uint8_t*>(static_cast<void*>(surfaceRowPtr)) + screenSurface->pitch));
+            surfaceRowPtr = reinterpret_cast<uint32_t*>(reinterpret_cast<uint8_t*>(surfaceRowPtr) + screenSurface->pitch);
         }
         SDL_UnlockSurface(screenSurface);
 

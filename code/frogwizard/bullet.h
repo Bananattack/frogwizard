@@ -9,11 +9,15 @@ enum BulletType {
     BULLET_TYPE_COUNT,
 };
 
+enum BulletFlags {
+    BULLET_FLAG_HURT_TARGET = 0x01,
+};
+
 struct Bullet {
     uint8_t type;
     uint8_t flags;
-    bool dir;
     uint8_t timer;
+    bool dir;
 };
 
 void bulletInitSystem();

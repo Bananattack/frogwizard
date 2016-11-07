@@ -15,7 +15,7 @@ struct Player {
     uint8_t maxShotCount;
     uint8_t bufferShootTimer;
     uint8_t bufferJumpTimer;
-    uint8_t fallDuration;
+    uint8_t fallTimer;
     bool dir;
     bool landed;
     bool jumpPressed;

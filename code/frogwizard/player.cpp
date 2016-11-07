@@ -160,18 +160,18 @@ void playerUpdate() {
                 ent->yspd = PLAYER_FALL_MAX_YSPEED;
             }
             player.landed = false;
-            if(player.fallDuration < 255) {
-                player.fallDuration++;
+            if(player.fallTimer < 255) {
+                player.fallTimer++;
             }
         } else {
             if(!player.landed) {
                 player.landed = true;
                 ent->yspd = 0;
 
-                if(player.fallDuration > 16) {                    
+                if(player.fallTimer > 16) {                    
                     particleStarAdd(ent->x + 10 * 16, ent->y + 4 * 16);
                 }
-                player.fallDuration = 0;
+                player.fallTimer = 0;
             }
         }
     }
@@ -191,7 +191,7 @@ void playerUpdate() {
         ent->drawFlags &= ~ENT_DRAW_FLAG_HFLIP;
     }
 
-    if(player.jumpTimer != 0 || player.fallDuration > 0) {
+    if(player.jumpTimer != 0 || player.fallTimer > 0) {
         ent->sprite = SPRITE_TYPE_PLAYER_2;
     } else {
         ent->sprite = player.timer < 1 || player.timer >= 9 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2;

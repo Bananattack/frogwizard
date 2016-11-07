@@ -15,6 +15,7 @@ namespace {
         DOWN_BUTTON,        
         A_BUTTON,
         B_BUTTON,
+        LEFT_BUTTON | RIGHT_BUTTON | UP_BUTTON | DOWN_BUTTON | A_BUTTON | B_BUTTON,
     };
 }
 

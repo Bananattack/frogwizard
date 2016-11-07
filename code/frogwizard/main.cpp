@@ -8,7 +8,7 @@ extern "C" int main(int argc, char** arv) {
     frogboy::init();
     gameInit();
 
-    while(frogboy::isActive()) {
+    while(frogboy::isActive()) {        
         if(frogboy::waitForFrame()) {
             frogboy::clearScreen();
             gameDraw();

@@ -3,6 +3,7 @@
 #include "frogboy.h"
 #include "bullet.h"
 #include "player.h"
+#include "critter.h"
 #include "sprite.h"
 #include "particle.h"
 #include "hitbox.h"
@@ -10,6 +11,7 @@
 Bullet bullets[ENT_COUNT_BULLET];
 
 typedef void (*BulletHandler)(uint8_t bulletIndex);
+extern const uint8_t bulletDamage[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 
@@ -52,6 +54,18 @@ void bulletUpdateAll() {
             entityUpdate(entityIndex);
 
             Bullet* bullet = &bullets[bulletIndex];
+
+            uint8_t damage = frogboy::readRom<uint8_t>(&bulletDamage[bullet->type]);
+            if(damage > 0) {
+                for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
+                    if(entityCollide(entityIndex, 3, ENT_OFFSET_CRITTER + bulletIndex, 3)) {
+                        critterHurt(critterIndex, damage);
+                        bullet->flags |= BULLET_FLAG_HURT_TARGET;
+                        break;
+                    }
+                }
+            }
+
             frogboy::readRom<BulletHandler>(&bulletUpdateHandler[bullet->type])(bulletIndex);
         }
     }
@@ -80,12 +94,14 @@ void fireballUpdate(uint8_t bulletIndex) {
         ent->sprite = ((bullet->timer - 5) % 8) < 4 ? (uint8_t) SPRITE_TYPE_FIREBALL_1 : (uint8_t) SPRITE_TYPE_FIREBALL_2;
         ent->drawFlags &= ~ENT_DRAW_FLAG_FLASH;
     } else if(bullet->timer >= 2) {
-        ent->drawFlags |= ENT_DRAW_FLAG_FLASH;        
+        ent->drawFlags |= ENT_DRAW_FLAG_FLASH;
     }
     bullet->timer++;
     
-    if(!entityOnScreen(entityIndex)
-    || (ent->status & ENT_STATUS_HIT_OBS) != 0) {
+    bool hitObs = (ent->status & ENT_STATUS_HIT_OBS) != 0;
+    bool hitTarget = (bullet->flags & BULLET_FLAG_HURT_TARGET) != 0;
+
+    if(!entityOnScreen(entityIndex) || hitObs || hitTarget) {
         if(player.shotCount > 0) {
             player.shotCount--;
         }
@@ -93,8 +109,7 @@ void fireballUpdate(uint8_t bulletIndex) {
         int16_t y = ent->y;
         bulletRemove(bulletIndex);
 
-        if((ent->status & ENT_STATUS_HIT_OBS) != 0) {
-            particleStarAdd(x + 8 * 16, y + 4 * 16);
+        if(hitObs) {
             bulletAdd(x, y, false, BULLET_TYPE_EXPLOSION);
         }
         return;
@@ -123,6 +138,11 @@ void explosionUpdate(uint8_t bulletIndex) {
     }
     bullet->timer++;
 }
+
+const uint8_t bulletDamage[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
+    1,
+    0,
+};
 
 const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
     fireballInit,

@@ -3,6 +3,7 @@
 #include "critter.h"
 #include "sprite.h"
 #include "player.h"
+#include "particle.h"
 #include "hitbox.h"
 
 Critter critters[ENT_COUNT_CRITTER];
@@ -25,6 +26,7 @@ uint8_t critterAdd(int16_t x, int16_t y, CritterType type) {
 
         memset(critter, 0, sizeof(Critter));
         critter->type = (uint8_t) type;
+        critter->hp = frogboy::readRom<uint8_t>(&critterMaxHP[critter->type]);
         frogboy::readRom<CritterHandler>(&critterInitHandler[critter->type])(critterIndex);
         return critterIndex;
     }
@@ -37,6 +39,24 @@ void critterRemove(uint8_t critterIndex) {
     entityRemove(ENT_OFFSET_CRITTER + critterIndex);
 }
 
+void critterHurt(uint8_t critterIndex, uint8_t damage) {
+    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;    
+    Entity* ent = &ents[entityIndex];
+    Critter* critter = &critters[critterIndex];
+
+    if(critter->hp > damage) {
+        critter->hp -= damage;
+        critter->flashTimer = 16;
+        ent->drawFlags |= ENT_DRAW_FLAG_FLASH;
+    } else {
+        particleAdd(ent->x + 4 * 16, ent->y + 4 * 16, -4, -4, 0x52, 20);
+        particleAdd(ent->x + 4 * 16, ent->y + 4 * 16, 4, -4, 0x52, 20);
+        particleAdd(ent->x + 4 * 16, ent->y + 4 * 16, -4, 4, 0x52, 20);
+        particleAdd(ent->x + 4 * 16, ent->y + 4 * 16, 4, 4, 0x52, 20);
+        critterRemove(critterIndex);
+    }
+}
+
 void critterUpdateAll() {
     for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
         uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
@@ -47,6 +67,16 @@ void critterUpdateAll() {
 
             Critter* critter = &critters[critterIndex];
             frogboy::readRom<CritterHandler>(&critterUpdateHandler[critter->type])(critterIndex);
+
+            ent->drawFlags &= ~ENT_DRAW_FLAG_HIDDEN;
+            if(critter->flashTimer > 0) {
+                critter->flashTimer--;
+                if(critter->flashTimer % 8 < 4) {
+                    ent->drawFlags |= ENT_DRAW_FLAG_HIDDEN;
+                }
+            } else {
+                ent->drawFlags &= ~ENT_DRAW_FLAG_FLASH;
+            }
         }
     }
 }
@@ -108,7 +138,7 @@ void walkerUpdate(uint8_t critterIndex) {
 
 const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     0,
-    1,
+    3,
 };
 
 const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {

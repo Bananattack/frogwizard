@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 enum {
-    PARTICLE_COUNT = 4,
+    PARTICLE_COUNT = 6,
 };
 
 struct Particle {

@@ -30,6 +30,7 @@ namespace frogboy {
         BUTTON_DOWN,
         BUTTON_SHOOT,
         BUTTON_JUMP,
+        BUTTON_RESET,
 
         BUTTON_COUNT,
     };
