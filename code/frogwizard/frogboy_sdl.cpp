@@ -164,10 +164,10 @@ namespace frogboy {
             deltaTime += timer - lastFrame;
             lastFrame = timer;
 
-            if(deltaTime >= 48) {
+            if(deltaTime > 48) {
                 deltaTime = 48;
             }
-            if(deltaTime > 16) {
+            if(deltaTime >= 16) {
                 deltaTime -= 16;
                 return true;
             }
