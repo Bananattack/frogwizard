@@ -1,7 +1,6 @@
-#ifdef FROGBOY_SDL
+#ifdef FROGBOY_HAS_MAIN
 
 #include <stdlib.h>
-#include <SDL.h>
 #include "frogboy.h"
 #include "game.h"
 
