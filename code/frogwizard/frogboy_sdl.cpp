@@ -132,6 +132,7 @@ namespace frogboy {
                             }
                             case SDL_WINDOWEVENT_RESTORED: {
                                 windowMaximized = false;
+                                resized = true;
                                 break;
                             }
                         }
