@@ -6,6 +6,7 @@
 enum CritterType {
     CRITTER_TYPE_COIN,
     CRITTER_TYPE_WALKER,
+    CRITTER_TYPE_DOOR,
     CRITTER_TYPE_COUNT,
 };
 

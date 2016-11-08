@@ -44,7 +44,7 @@ void playerAdd(int16_t x, int16_t y) {
         memset(&player, 0, sizeof(Player));
 
         Entity* ent = &ents[entityIndex];
-        ent->sprite = (uint8_t) SPRITE_TYPE_PLAYER_1;
+        ent->sprite = SPRITE_TYPE_PLAYER_1;
         ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
 
         player.hp = PLAYER_MAX_HP_START;

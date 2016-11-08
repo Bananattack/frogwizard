@@ -28,7 +28,7 @@ bool hitboxCollide(int16_t xa, int16_t ya, HitboxType hitboxA, int8_t borderA, i
 }
 
 void hitboxGetData(HitboxType hitbox, int8_t* x, int8_t* y, int8_t* w, int8_t* h) {
-    const int8_t* hitboxPtr = hitboxData + (uint16_t) hitbox * 4;
+    const int8_t* hitboxPtr = hitboxData + static_cast<uint16_t>(hitbox) * 4;
     *x = frogboy::readRom<int8_t>(hitboxPtr++);
     *y = frogboy::readRom<int8_t>(hitboxPtr++);
     *w = frogboy::readRom<int8_t>(hitboxPtr++);

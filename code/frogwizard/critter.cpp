@@ -9,9 +9,9 @@
 Critter critters[ENT_COUNT_CRITTER];
 
 typedef void (*CritterHandler)(uint8_t critterIndex);
-extern const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
-extern const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
-extern const CritterHandler critterUpdateHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 
 void critterInitSystem() {
     memset(critters, 0, sizeof(critters));
@@ -25,7 +25,7 @@ uint8_t critterAdd(int16_t x, int16_t y, CritterType type) {
         Critter* critter = &critters[critterIndex];
 
         memset(critter, 0, sizeof(Critter));
-        critter->type = (uint8_t) type;
+        critter->type = type;
         critter->hp = frogboy::readRom<uint8_t>(&critterMaxHP[critter->type]);
         frogboy::readRom<CritterHandler>(&critterInitHandler[critter->type])(critterIndex);
         return critterIndex;
@@ -91,8 +91,8 @@ void coinInit(uint8_t critterIndex) {}
 void coinUpdate(uint8_t critterIndex) {}
 
 enum {
-    WALKER_ACCEL = 2,
-    WALKER_MAX_SPEED = 12,
+    WALKER_ACCEL = 1,
+    WALKER_MAX_SPEED = 8,
 };
 
 void walkerInit(uint8_t critterIndex) {
@@ -102,7 +102,7 @@ void walkerInit(uint8_t critterIndex) {
 
     ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
     ent->xspd = critter->var[1] ? WALKER_MAX_SPEED : -WALKER_MAX_SPEED;
-    ent->sprite = (uint8_t) SPRITE_TYPE_WALKER_1;
+    ent->sprite = SPRITE_TYPE_WALKER_1;
 }
 
 void walkerUpdate(uint8_t critterIndex) {
@@ -111,11 +111,11 @@ void walkerUpdate(uint8_t critterIndex) {
     Critter* critter = &critters[critterIndex];
 
     critter->var[0]++;
-    if(critter->var[0] > 8) {
+    if(critter->var[0] > 12) {
         critter->var[0] = 0;
-        ent->sprite = ent->sprite == (uint8_t) SPRITE_TYPE_WALKER_2
-            ? (uint8_t) SPRITE_TYPE_WALKER_1
-            : (uint8_t) SPRITE_TYPE_WALKER_2;
+        ent->sprite = ent->sprite == SPRITE_TYPE_WALKER_2
+            ? SPRITE_TYPE_WALKER_1
+            : SPRITE_TYPE_WALKER_2;
     }
     
     ent->xspd += critter->var[1] ? WALKER_ACCEL : -WALKER_ACCEL;
@@ -124,30 +124,41 @@ void walkerUpdate(uint8_t critterIndex) {
     }
     if(ent->xspd > WALKER_MAX_SPEED) {
         ent->xspd = WALKER_MAX_SPEED;
-    }    
+    }
 
     if((ent->status & ENT_STATUS_HIT_OBS_X) != 0) {
         critter->var[1] ^= 1;
         ent->drawFlags ^= ENT_DRAW_FLAG_HFLIP;
     }
 
-    if(entityCollide(entityIndex, -3, ENT_OFFSET_PLAYER, -3)) {
+    if(entityCollide(entityIndex, -1, ENT_OFFSET_PLAYER, -1)) {
         playerHurt();
     }
 }
 
-const uint8_t critterMaxHP[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
+void doorInit(uint8_t critterIndex) {
+    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
+    Entity* ent = &ents[entityIndex];
+    ent->sprite = SPRITE_TYPE_DOOR;
+}
+
+void doorUpdate(uint8_t critterIndex) {}
+
+const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     0,
     3,
+    0,
 };
 
-const CritterHandler critterInitHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
+const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinInit,
     walkerInit,
+    doorInit,
 };
 
-const CritterHandler critterUpdateHandler[(int) CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
+const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinUpdate,
     walkerUpdate,
+    doorUpdate,
 };
 

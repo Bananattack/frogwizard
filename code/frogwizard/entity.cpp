@@ -7,8 +7,6 @@
 
 Entity ents[ENT_COUNT];
 
-
-
 enum {
     ENT_MAXIMUM_SLOPE = 4,
 };
@@ -155,7 +153,7 @@ bool entityCollide(uint8_t entityIndexA, int8_t borderA, uint8_t entityIndexB, i
     Entity* entB = &ents[entityIndexB];
     if((entA->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
     && (entB->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
-        return hitboxCollide(entA->x / 16, entA->y / 16, (HitboxType) entA->hitbox, 0, entB->x / 16, entB->y / 16, (HitboxType) entB->hitbox, 0);
+        return hitboxCollide(entA->x / 16, entA->y / 16, (HitboxType) entA->hitbox, borderA, entB->x / 16, entB->y / 16, (HitboxType) entB->hitbox, borderB);
     }    
     return false;
 }

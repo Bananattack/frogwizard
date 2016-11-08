@@ -58,7 +58,7 @@ const uint8_t columnBlocks[] FROGBOY_ROM_DATA = {
 };
 
 const uint8_t castleMap[] FROGBOY_ROM_DATA = {
-    8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 5, 9, 10, 10, 10, 10, 11, 6, 6, 6, 7, 8, 8, 8, 8, 8, 8, 1, 8, 8, 2, 8, 8, 1, 8, 8, 8, 5, 6, 6, 6, 6, 6, 3, 6, 7, 8, 8, 8, 8, 8, 8, 5, 6, 7, 8, 5, 6, 6, 7, 8, 8, 8, 8, 8,
+    8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 3, 6, 7, 8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 5, 9, 10, 10, 10, 10, 11, 6, 6, 6, 7, 8, 8, 8, 8, 8, 8, 1, 8, 8, 2, 8, 8, 1, 8, 8, 8, 5, 6, 6, 6, 6, 6, 3, 6, 7, 8, 8, 8, 8, 8, 8, 5, 6, 7, 8, 5, 6, 6, 7, 8, 8, 8, 8, 8,
 };
 
 // Table of pointers to each map.
@@ -99,8 +99,8 @@ uint8_t mapGetPixelAttribute(int16_t x, int16_t y) {
     uint8_t row = static_cast<uint8_t>(y / 16);
 
     const uint8_t* mapPtr = frogboy::readRom<const uint8_t*>(mapAddresses + mapCurrentIndex);
-    const uint8_t* columnPtr = columnBlocks + static_cast<uint16_t>(frogboy::readRom<uint8_t>(mapPtr + col) * 4);
-    const uint8_t* blockAttrPtr = blockAttributes + static_cast<uint16_t>(frogboy::readRom<uint8_t>(columnPtr + row) * 4);
+    const uint8_t* columnPtr = columnBlocks + static_cast<uint16_t>(frogboy::readRom<uint8_t>(mapPtr + col)) * 4;
+    const uint8_t* blockAttrPtr = blockAttributes + static_cast<uint16_t>(frogboy::readRom<uint8_t>(columnPtr + row)) * 4;
     return frogboy::readRom<uint8_t>(blockAttrPtr + (x % 16 < 8 ? 0 : 1) + (y % 16 < 8 ? 0 : 2));
 }
 
@@ -149,10 +149,10 @@ void mapDraw() {
     for(uint8_t col = 0; col != columnCount; ++col) {
         int16_t drawY = mapCameraY;
 
-        const uint8_t* columnPtr = columnBlocks + static_cast<uint16_t>(frogboy::readRom<uint8_t>(mapPtr++) * 4);
+        const uint8_t* columnPtr = columnBlocks + static_cast<uint16_t>(frogboy::readRom<uint8_t>(mapPtr++)) * 4;
 
         for(uint8_t row = 0; row != 4; ++row) {
-            uint16_t blockIndex = static_cast<uint16_t>(frogboy::readRom<uint8_t>(columnPtr++) * 4);
+            uint16_t blockIndex = static_cast<uint16_t>(frogboy::readRom<uint8_t>(columnPtr++)) * 4;
             const uint8_t* blockTilePtr = blockTiles + blockIndex;
             const uint8_t* blockAttrPtr = blockAttributes + blockIndex;
 

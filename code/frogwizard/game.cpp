@@ -20,6 +20,7 @@ void gameInit() {
     particleInitSystem();
 
     playerAdd(32 * 16, 32 * 16);
+    critterAdd(160 * 16, 16 * 16, CRITTER_TYPE_DOOR);
     critterAdd(144 * 16, 16 * 16, CRITTER_TYPE_WALKER);
     critterAdd(384 * 16, 16 * 16, CRITTER_TYPE_WALKER);
     player.dir = true;
@@ -33,10 +34,10 @@ enum {
 
 void gameDraw() {
     mapDraw();
-    particleDrawAll();
     critterDrawAll();
     playerDraw(); 
     bulletDrawAll();   
+    particleDrawAll();
     if(gamePaused) {
         for(uint8_t i = 0; i != sizeof(pauseMessage) + 1; ++i) {
             frogboy::drawTile(32 + i * 8, 24, spritesBitmap, 0x4A, 0, false, false);

@@ -11,9 +11,9 @@
 Bullet bullets[ENT_COUNT_BULLET];
 
 typedef void (*BulletHandler)(uint8_t bulletIndex);
-extern const uint8_t bulletDamage[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
-extern const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
-extern const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const uint8_t bulletDamage[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const BulletHandler bulletInitHandler[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const BulletHandler bulletUpdateHandler[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 
 void bulletInitSystem() {
     memset(bullets, 0, sizeof(bullets));
@@ -58,7 +58,7 @@ void bulletUpdateAll() {
             uint8_t damage = frogboy::readRom<uint8_t>(&bulletDamage[bullet->type]);
             if(damage > 0) {
                 for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
-                    if(entityCollide(entityIndex, 3, ENT_OFFSET_CRITTER + critterIndex, 3)) {
+                    if(entityCollide(entityIndex, 1, ENT_OFFSET_CRITTER + critterIndex, 1)) {
                         critterHurt(critterIndex, damage);
                         bullet->flags |= BULLET_FLAG_HURT_TARGET;
                         break;
@@ -82,7 +82,7 @@ void fireballInit(uint8_t bulletIndex) {
     Entity* ent = &ents[entityIndex];
     Bullet* bullet = &bullets[bulletIndex];
     ent->xspd = bullet->dir ? 56 : -56;
-    ent->sprite = (uint8_t) SPRITE_TYPE_CIRCLE;    
+    ent->sprite = SPRITE_TYPE_CIRCLE;    
 }
 
 void fireballUpdate(uint8_t bulletIndex) {
@@ -91,7 +91,7 @@ void fireballUpdate(uint8_t bulletIndex) {
     Bullet* bullet = &bullets[bulletIndex];
 
     if(bullet->timer >= 5) {
-        ent->sprite = ((bullet->timer - 5) % 8) < 4 ? (uint8_t) SPRITE_TYPE_FIREBALL_1 : (uint8_t) SPRITE_TYPE_FIREBALL_2;
+        ent->sprite = ((bullet->timer - 5) % 8) < 4 ? SPRITE_TYPE_FIREBALL_1 : SPRITE_TYPE_FIREBALL_2;
         ent->drawFlags &= ~ENT_DRAW_FLAG_FLASH;
     } else if(bullet->timer >= 2) {
         ent->drawFlags |= ENT_DRAW_FLAG_FLASH;
@@ -123,7 +123,7 @@ void explosionInit(uint8_t bulletIndex) {
     (void) bullet;
 
     ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS;
-    ent->sprite = (uint8_t) SPRITE_TYPE_CIRCLE;
+    ent->sprite = SPRITE_TYPE_CIRCLE;
 }
 
 void explosionUpdate(uint8_t bulletIndex) {
@@ -139,17 +139,17 @@ void explosionUpdate(uint8_t bulletIndex) {
     bullet->timer++;
 }
 
-const uint8_t bulletDamage[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
+const uint8_t bulletDamage[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
     1,
     0,
 };
 
-const BulletHandler bulletInitHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
+const BulletHandler bulletInitHandler[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
     fireballInit,
     explosionInit,
 };
 
-const BulletHandler bulletUpdateHandler[(int) BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
+const BulletHandler bulletUpdateHandler[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA = {
     fireballUpdate,
     explosionUpdate,
 };
