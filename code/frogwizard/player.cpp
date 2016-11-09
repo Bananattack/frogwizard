@@ -18,9 +18,9 @@ enum {
     PLAYER_FRICTION_DIVIDER = 16,
 
     PLAYER_JUMP_MIN_DURATION = 8,
-    PLAYER_JUMP_MAX_DURATION = 14,
-    PLAYER_JUMP_YACCEL = 3,
-    PLAYER_JUMP_MAX_YSPEED = 32,
+    PLAYER_JUMP_MAX_DURATION = 8,
+    PLAYER_JUMP_YACCEL = 28,
+    PLAYER_JUMP_MAX_YSPEED = 28,
     PLAYER_JUMP_INPUT_BUFFER_TIME = 10,
 
     PLAYER_FALL_YACCEL = 2,
@@ -35,7 +35,16 @@ enum {
     PLAYER_HURT_STOP_CONTROL_DURATION = 16,
 };
 
+PlayerStatus playerStatus;
 Player player;
+
+void playerInitSystem() {
+    memset(&playerStatus, 0, sizeof(PlayerStatus));
+    playerStatus.hp = PLAYER_MAX_HP_START;
+    playerStatus.maxHP = PLAYER_MAX_HP_START;
+    playerStatus.maxShotCount = PLAYER_SHOOT_MAX_SHOTS;
+    playerStatus.dir = true;
+}
 
 void playerAdd(int16_t x, int16_t y) {
     uint8_t entityIndex = entityAdd(x, y, ENT_OFFSET_PLAYER, ENT_COUNT_PLAYER);
@@ -46,11 +55,6 @@ void playerAdd(int16_t x, int16_t y) {
         Entity* ent = &ents[entityIndex];
         ent->sprite = SPRITE_TYPE_PLAYER_1;
         ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
-
-        player.hp = PLAYER_MAX_HP_START;
-        player.maxHP = PLAYER_MAX_HP_START;
-        player.shotCount = 0;
-        player.maxShotCount = PLAYER_SHOOT_MAX_SHOTS;
     }
 }
 
@@ -64,6 +68,10 @@ void playerUpdate() {
     bool right = frogboy::isPressed(frogboy::BUTTON_RIGHT);
     if(left && right) {
         left = right = false;
+    }
+
+    if(playerStatus.usedDoor && !frogboy::isPressed(frogboy::BUTTON_UP)) {
+        playerStatus.usedDoor = false;
     }
 
     ent->drawFlags &= ~ENT_DRAW_FLAG_HIDDEN;
@@ -82,7 +90,7 @@ void playerUpdate() {
         if(ent->xspd < -PLAYER_RUN_MAX_XSPEED) {
             ent->xspd = -PLAYER_RUN_MAX_XSPEED;
         }        
-        player.dir = false;
+        playerStatus.dir = false;
         moved = true;
     }
     else if(right) {
@@ -90,7 +98,7 @@ void playerUpdate() {
         if(ent->xspd > PLAYER_RUN_MAX_XSPEED) {
             ent->xspd = PLAYER_RUN_MAX_XSPEED;
         }
-        player.dir = true;
+        playerStatus.dir = true;
         moved = true;
     } else {
         ent->xspd = ent->xspd * PLAYER_FRICTION_MULTIPLIER / PLAYER_FRICTION_DIVIDER;
@@ -113,8 +121,8 @@ void playerUpdate() {
     }
 
     if(player.bufferShootTimer > 0) {
-        if(player.shootTimer == 0 && player.shotCount < player.maxShotCount) {
-            bulletAdd(ent->x + (player.dir ? 8 * 16 : -8 * 16), ent->y, player.dir, BULLET_TYPE_FIREBALL);
+        if(player.shootTimer == 0 && player.shotCount < playerStatus.maxShotCount) {
+            bulletAdd(ent->x + (playerStatus.dir ? 8 * 16 : -8 * 16), ent->y, playerStatus.dir, BULLET_TYPE_FIREBALL);
             player.bufferShootTimer = 0;
             player.shootTimer = PLAYER_SHOOT_COOLDOWN;
             player.shotCount++;
@@ -165,6 +173,7 @@ void playerUpdate() {
             }
         } else {
             if(!player.landed) {
+                ent->controlFlags &= ~ENT_CTRL_FLAG_IGNORE_SLOPES;
                 player.landed = true;
                 ent->yspd = 0;
 
@@ -174,6 +183,10 @@ void playerUpdate() {
                 player.fallTimer = 0;
             }
         }
+    }
+
+    if(!player.landed) {
+        ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_SLOPES;
     }
     
     if(moved) {
@@ -185,7 +198,7 @@ void playerUpdate() {
         player.timer = 0;
     }
 
-    if(player.dir) {
+    if(playerStatus.dir) {
         ent->drawFlags |= ENT_DRAW_FLAG_HFLIP;
     } else {
         ent->drawFlags &= ~ENT_DRAW_FLAG_HFLIP;
@@ -202,12 +215,12 @@ void playerHurt() {
     if(player.hurtTimer == 0) {
         Entity* ent = &ents[ENT_OFFSET_PLAYER];
 
-        if(player.hp > 0) {
-            player.hp--;
+        if(playerStatus.hp > 0) {
+            playerStatus.hp--;
         }
 
         player.hurtTimer = PLAYER_HURT_DURATION;
-        if(player.dir) {
+        if(playerStatus.dir) {
             ent->xspd = -40;            
         } else {
             ent->xspd = 40;
@@ -223,13 +236,17 @@ void playerDraw() {
 
 void playerDrawHUD() {
     uint8_t h;
-    for(h = 0; h < player.maxHP; ++h) {
-        frogboy::drawTile(2 + h * 8, 3, spritesBitmap, 0x40, 0, false, false);
+    for(h = 0; h < playerStatus.maxHP; ++h) {
+        for(uint8_t i = 0; i < 3; ++i) {
+            for(uint8_t j = 0; j < 3; ++j) {
+                frogboy::drawTile(1 + h * 8 + i, 1 + j, spritesBitmap, 0x40, 0, false, false);
+            }
+        }
     }
-    for(h = 0; h < player.hp; ++h) {
+    for(h = 0; h < playerStatus.hp; ++h) {
         frogboy::drawTile(2 + h * 8, 2, spritesBitmap, 0x40, 1, false, false);
     }
-    for(; h < player.maxHP; ++h) {
+    for(; h < playerStatus.maxHP; ++h) {
         frogboy::drawTile(2 + h * 8, 2, spritesBitmap, 0x41, 1, false, false);
     }    
 }

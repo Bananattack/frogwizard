@@ -6,6 +6,7 @@
 enum EntityCtrlFlags {
     ENT_CTRL_FLAG_IGNORE_OBS = 1 << 0,
     ENT_CTRL_FLAG_IGNORE_SLOPES = 1 << 1,
+    ENT_CTRL_FLAG_BULLET_TARGET = 1 << 2,
     ENT_CTRL_FLAG_ACTIVE = 1 << 7,
 };
 
@@ -47,12 +48,6 @@ struct Entity {
     uint8_t hitbox;
 };
 
-enum DamageStatus {
-    DAMAGE_IGNORED,
-    DAMAGE_REJECTED,
-    DAMAGE_ACCEPTED,
-};
-
 extern Entity ents[ENT_COUNT];
 
 void entityInitSystem();
@@ -62,6 +57,5 @@ bool entityDetectFloor(uint8_t entityIndex);
 void entityUpdate(uint8_t entityIndex);
 void entityDraw(uint8_t entityIndex);
 bool entityCollide(uint8_t entityIndexA, int8_t borderA, uint8_t entityIndexB, int8_t borderB);
-bool entityOnScreen(uint8_t entityIndex);
 
 #endif

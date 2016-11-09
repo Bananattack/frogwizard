@@ -10,7 +10,7 @@ enum BulletType {
 };
 
 enum BulletFlags {
-    BULLET_FLAG_HURT_TARGET = 0x01,
+    BULLET_FLAG_PLAYER_BULLET = 0x01,
 };
 
 struct Bullet {

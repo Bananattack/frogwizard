@@ -1,4 +1,3 @@
-#include "frogboy.h"
 #include "map.h"
 #include "sprites_bitmap.h"
 
@@ -43,39 +42,49 @@ const uint8_t blockAttributes[] FROGBOY_ROM_DATA = {
 
 // The series of unique 1x4 arrangements of blocks
 const uint8_t columnBlocks[] FROGBOY_ROM_DATA = {
-    0, 0, 0, 0, // empty
-    0, 0, 3, 6, // wall 2 on dirt floor 1 
-    0, 3, 3, 6, // wall 3 on dirt floor 1
-    0, 3, 6, 6, // wall 3 on dirt floor 2
-    0, 0, 0, 4, // dirt floor / 0 to 1    
-    0, 0, 4, 6, // dirt floor / 1 to 2
-    0, 0, 6, 6, // dirt floor 2
-    0, 0, 5, 6, // dirt floor \ 1 to 2
-    0, 0, 0, 6, // dirt floor 1
-    0, 4, 6, 6, // dirt floor / 2 to 3
-    0, 6, 6, 6, // dirt floor 3
-    0, 5, 6, 6, // dirt floor \ 2 to 3
+    0, 0, 0, 0, // 0: empty
+    0, 0, 3, 6, // 1: wall 2 on dirt floor 1 
+    0, 3, 3, 6, // 2: wall 3 on dirt floor 1
+    0, 3, 6, 6, // 3: wall 3 on dirt floor 2
+    0, 0, 0, 4, // 4: dirt floor / 0 to 1    
+    0, 0, 4, 6, // 5: dirt floor / 1 to 2
+    0, 0, 6, 6, // 6: dirt floor 2
+    0, 0, 5, 6, // 7: dirt floor \ 1 to 2
+    0, 0, 0, 6, // 8: dirt floor 1
+    0, 4, 6, 6, // 9: dirt floor / 2 to 3
+    0, 6, 6, 6, // 10: dirt floor 3
+    0, 5, 6, 6, // 11: dirt floor \ 2 to 3
+    3, 3, 3, 3, // 12: full wall
+    3, 0, 0, 3, // 13: wall 1, ceiling 1
 };
 
-const uint8_t castleMap[] FROGBOY_ROM_DATA = {
+const uint8_t grasslandMap[] FROGBOY_ROM_DATA = {
     8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 3, 6, 7, 8, 8, 8, 8, 8, 8, 8, 5, 6, 6, 6, 6, 6, 6, 7, 8, 8, 5, 9, 10, 10, 10, 10, 11, 6, 6, 6, 7, 8, 8, 8, 8, 8, 8, 1, 8, 8, 2, 8, 8, 1, 8, 8, 8, 5, 6, 6, 6, 6, 6, 3, 6, 7, 8, 8, 8, 8, 8, 8, 5, 6, 7, 8, 5, 6, 6, 7, 8, 8, 8, 8, 8,
+};
+
+const uint8_t houseMap[] FROGBOY_ROM_DATA = {
+    0, 12, 13, 13, 13, 13, 12, 0, 
 };
 
 // Table of pointers to each map.
 // Every map is comprised of a big sequence of column references.
 const uint8_t* const mapAddresses[static_cast<uint8_t>(MAP_TYPE_COUNT)] FROGBOY_ROM_DATA = {
-    castleMap
+    grasslandMap,
+    houseMap,
+    houseMap,
 };
 
 // The width of each map. Can be up to 256 tiles wide
 const uint8_t mapWidths[static_cast<uint8_t>(MAP_TYPE_COUNT)] FROGBOY_ROM_DATA = {
-    sizeof(castleMap),
+    sizeof(grasslandMap),
+    sizeof(houseMap),
+    sizeof(houseMap),
 };
 
 // spawn data: consists of x, y, type, flag
 
 void mapInitSystem() {
-    mapCurrentIndex = 0;
+    mapCurrentIndex = MAP_TYPE_GRASSLAND;
     mapCameraX = 0;
     mapCameraY = 0;
 }

@@ -9,6 +9,8 @@ Entity ents[ENT_COUNT];
 
 enum {
     ENT_MAXIMUM_SLOPE = 4,
+    ENT_SCREEN_BORDER_X = 64,
+    ENT_SCREEN_BORDER_Y = 16,
 };
 
 void entityInitSystem() {
@@ -89,7 +91,7 @@ void entityUpdate(uint8_t entityIndex) {
                     }
                 }
             } else if(ent->xspd != 0) {
-                ent->xspd = 0;
+                //ent->xspd = 0;
                 ent->status |= ENT_STATUS_HIT_OBS_X;
             }
 
@@ -157,12 +159,3 @@ bool entityCollide(uint8_t entityIndexA, int8_t borderA, uint8_t entityIndexB, i
     }    
     return false;
 }
-
-bool entityOnScreen(uint8_t entityIndex) {
-    Entity* ent = &ents[entityIndex];
-    return ent->x / 16 - mapCameraX < 144
-        && ent->x / 16 - mapCameraX + 16 > -16
-        && ent->y / 16 - mapCameraY < 80
-        && ent->y / 16 - mapCameraY + 16 > -16;
-}
-

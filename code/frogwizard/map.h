@@ -1,8 +1,13 @@
 #ifndef MAP_H
 #define MAP_H
 
+#include "frogboy.h"
+
 enum MapType {
-    MAP_TYPE_CASTLE,
+    MAP_TYPE_GRASSLAND,
+    MAP_TYPE_HOUSE,
+    MAP_TYPE_HOUSE2,
+
     MAP_TYPE_COUNT,
 };
 

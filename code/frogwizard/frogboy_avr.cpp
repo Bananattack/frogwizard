@@ -15,7 +15,7 @@ namespace {
         DOWN_BUTTON,        
         A_BUTTON,
         B_BUTTON,
-        UP_BUTTON,
+        DOWN_BUTTON,
         LEFT_BUTTON | RIGHT_BUTTON | UP_BUTTON | DOWN_BUTTON | A_BUTTON | B_BUTTON,
     };
 }
@@ -80,7 +80,7 @@ namespace frogboy {
     }
 
     int getRandom(int min, int max) {
-        return random(min, max);
+        return random(min, max + 1);
     }
 
     template<> char readRom(const char* ptr) {
