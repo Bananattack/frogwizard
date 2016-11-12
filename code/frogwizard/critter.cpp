@@ -250,6 +250,7 @@ const uint8_t FROGBOY_ROM_DATA grasslandSpawnData[] = {
     10, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE,
     24, 1, CRITTER_TYPE_WALKER, 0,
     40, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE2,
+    61, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
 };
 
 const uint8_t houseSpawnData[] FROGBOY_ROM_DATA = {
@@ -260,14 +261,20 @@ const uint8_t house2SpawnData[] FROGBOY_ROM_DATA = {
     5, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_HOUSE2_GRASSLAND,
 };
 
+const uint8_t house3SpawnData[] FROGBOY_ROM_DATA = {
+    2, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_HOUSE3_GRASSLAND,
+};
+
 const uint8_t critterSpawnCount[MAP_TYPE_COUNT] FROGBOY_ROM_DATA = {
     sizeof(grasslandSpawnData) / 4,
     sizeof(houseSpawnData) / 4,
     sizeof(house2SpawnData) / 4,
+    sizeof(house3SpawnData) / 4,
 };
 
 const uint8_t* const critterSpawnData[MAP_TYPE_COUNT] FROGBOY_ROM_DATA = {
     grasslandSpawnData,
     houseSpawnData,
     house2SpawnData,
+    house3SpawnData,
 };

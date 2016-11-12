@@ -7,6 +7,7 @@ enum MapType {
     MAP_TYPE_GRASSLAND,
     MAP_TYPE_HOUSE,
     MAP_TYPE_HOUSE2,
+    MAP_TYPE_HOUSE3,
 
     MAP_TYPE_COUNT,
 };

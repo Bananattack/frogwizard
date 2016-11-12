@@ -23,6 +23,8 @@ const uint8_t doorData[DOOR_TYPE_COUNT * 3] FROGBOY_ROM_DATA = {
     10, 1, MAP_TYPE_GRASSLAND,
     5, 2, MAP_TYPE_HOUSE2,
     40, 1, MAP_TYPE_GRASSLAND,
+    2, 2, MAP_TYPE_HOUSE3,
+    61, 1, MAP_TYPE_GRASSLAND,
 };
 
 void gameInit() {
@@ -60,7 +62,7 @@ void gameDraw() {
 }
 
 enum {
-    CAMERA_BORDER = 8,
+    CAMERA_BORDER = 6,
     CAMERA_MAX_SPEED = 4,
 };
  
