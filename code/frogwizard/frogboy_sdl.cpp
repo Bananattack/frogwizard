@@ -7,6 +7,10 @@
 #include "frogboy.h"
 
 namespace {
+    enum {
+        FRAME_INTERVAL = 16,
+    };
+
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     SDL_Texture* screenTexture = nullptr;
@@ -90,7 +94,6 @@ namespace frogboy {
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, screenTexture, NULL, NULL);
         SDL_RenderPresent(renderer);
-        SDL_Delay(10);
     }
 
     bool waitForFrame() {
@@ -165,14 +168,21 @@ namespace frogboy {
 
         if(windowOpen) {
             uint32_t timer = SDL_GetTicks();
+            if(lastFrame + FRAME_INTERVAL > timer
+            && deltaTime < FRAME_INTERVAL) {
+                SDL_Delay(lastFrame + FRAME_INTERVAL - timer);
+            }
+
+            timer = SDL_GetTicks();
             deltaTime += timer - lastFrame;
             lastFrame = timer;
 
-            if(deltaTime > 48) {
-                deltaTime = 48;
+            if(deltaTime > FRAME_INTERVAL * 3) {
+                deltaTime = FRAME_INTERVAL * 3;
             }
-            if(deltaTime >= 16) {
-                deltaTime -= 16;
+
+            if(deltaTime >= FRAME_INTERVAL) {
+                deltaTime -= FRAME_INTERVAL;
                 return true;
             }
         }

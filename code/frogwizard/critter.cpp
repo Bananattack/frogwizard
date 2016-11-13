@@ -19,6 +19,7 @@ uint8_t critterSpawnKilled[CRITTER_SPAWN_ARRAY_SIZE];
 
 typedef void (*CritterHandler)(uint8_t critterIndex);
 extern const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 
@@ -135,8 +136,17 @@ void critterUpdateAll() {
 }
 
 void critterDrawAll() {
-    for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
-        entityDraw(ENT_OFFSET_CRITTER + critterIndex);
+    for(uint8_t layer = 0; layer != 2; ++layer) {
+        for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
+            uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
+            Entity* ent = &ents[entityIndex];
+            if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
+                Critter* critter = &critters[critterIndex];
+                if(frogboy::readRom<uint8_t>(&critterLayer[critter->type]) == layer) {
+                    entityDraw(entityIndex);
+                }
+            }
+        }
     }
 }
 
@@ -234,6 +244,12 @@ const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     0,
 };
 
+const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
+    1,
+    1,
+    0,
+};
+
 const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinInit,
     walkerInit,
@@ -250,7 +266,7 @@ const uint8_t FROGBOY_ROM_DATA grasslandSpawnData[] = {
     10, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE,
     24, 1, CRITTER_TYPE_WALKER, 0,
     40, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE2,
-    61, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
+    64, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
 };
 
 const uint8_t houseSpawnData[] FROGBOY_ROM_DATA = {
