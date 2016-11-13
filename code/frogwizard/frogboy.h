@@ -6,7 +6,7 @@
 #define FROGBOY_APPNAME "frog wizard"
 
 namespace frogboy {
-    void init();
+    bool init();
     void destroy();
     void clearScreen();
     void refreshScreen();

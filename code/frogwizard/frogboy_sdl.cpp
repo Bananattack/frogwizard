@@ -9,6 +9,8 @@
 namespace {
     enum {
         FRAME_INTERVAL = 16,
+        SCREEN_SCALE = 8,
+        DESKTOP_FIT_BORDER = 64,
     };
 
     SDL_Window* window = nullptr;
@@ -20,8 +22,6 @@ namespace {
     uint32_t deltaTime = 0;
     uint32_t lastFrame = 0;
     uint32_t lastMouseMove = 0;
-
-    const uint8_t SCREEN_SCALE = 8;
 
     bool windowOpen = false;
     bool windowMaximized = false;
@@ -42,37 +42,84 @@ namespace {
 }
 
 namespace frogboy {
-    void init() {
+    bool init() {
         srand(static_cast<unsigned int>(time(nullptr)));
 
-        SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-        window = SDL_CreateWindow(FROGBOY_APPNAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE, SDL_WINDOW_RESIZABLE);
+        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
+            return false;
+        }
+
+        int scale = SCREEN_SCALE;
+        SDL_DisplayMode dm;
+        if (SDL_GetDesktopDisplayMode(0, &dm) == 0) {            
+            if(dm.w - DESKTOP_FIT_BORDER < SCREEN_WIDTH * scale
+            || dm.h - DESKTOP_FIT_BORDER < SCREEN_HEIGHT * scale) {
+                int xscale = (dm.w - DESKTOP_FIT_BORDER) / SCREEN_WIDTH;
+                int yscale = (dm.h - DESKTOP_FIT_BORDER) / SCREEN_HEIGHT;
+                scale = xscale < yscale ? xscale : yscale;
+
+                if(scale < 1) {
+                    scale = 1;
+                }
+            }
+        }
+
+        window = SDL_CreateWindow(FROGBOY_APPNAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * scale, SCREEN_HEIGHT * scale, SDL_WINDOW_RESIZABLE);
+        if(window == nullptr) {
+            return false;
+        }
+
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
+        if(renderer == nullptr) {
+            return false;
+        }
 
         SDL_SetWindowGrab(window, SDL_FALSE);
         SDL_SetRelativeMouseMode(SDL_FALSE);
 
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
+
         screenTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+        if(screenTexture == nullptr) {
+            return false;
+        }
+
         screenSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
+        if(screenSurface == nullptr) {
+            return false;
+        }
+
         clearScreen();
         lastFrame = SDL_GetTicks();
         lastMouseMove = lastFrame;
 
+        windowOpen = true;
+        windowMaximized = false;
         windowFullscreen = false;
 
         memset(pressed, 0, sizeof(pressed));
 
-        windowMaximized = false;
-        windowOpen = true;
+        return true;
     }
 
     void destroy() {
-        SDL_DestroyTexture(screenTexture);
-        SDL_FreeSurface(screenSurface);
-        SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(window);
+        if(screenTexture != nullptr) {
+            SDL_DestroyTexture(screenTexture);
+        }
+        if(screenSurface != nullptr) {
+            SDL_FreeSurface(screenSurface);
+        }
+        if(renderer != nullptr) {
+            SDL_DestroyRenderer(renderer);
+        }
+        if(window != nullptr) {
+            SDL_DestroyWindow(window);
+        }
+        screenTexture = nullptr;
+        screenSurface = nullptr;
+        renderer = nullptr;
+        window = nullptr;
         SDL_Quit();
     }
 
@@ -190,15 +237,12 @@ namespace frogboy {
             int width, height;
             SDL_GetWindowSize(window, &width, &height);
             int xscale = (width + SCREEN_WIDTH / 2) / SCREEN_WIDTH;
-            int yscale = (height + SCREEN_WIDTH / 2) / SCREEN_WIDTH;
+            int yscale = (height + SCREEN_HEIGHT / 2) / SCREEN_HEIGHT;
 
             if(width % SCREEN_WIDTH != 0
             || height % SCREEN_HEIGHT != 0
             || xscale != yscale) {
-                int scale = xscale;
-                if(scale < yscale) {
-                    scale = yscale;
-                }
+                int scale = xscale > yscale ? xscale : yscale;
                 if(scale < 1) {
                     scale = 1;
                 }

@@ -21,10 +21,11 @@ namespace {
 }
 
 namespace frogboy {
-    void init() {
+    bool init() {
         arduboy.begin(); 
         arduboy.setFrameRate(60);
         arduboy.initRandomSeed();
+        return true;
     }
 
     void destroy() {

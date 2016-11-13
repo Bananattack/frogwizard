@@ -5,19 +5,19 @@
 #include "game.h"
 
 extern "C" int main(int argc, char** arv) {
-    frogboy::init();
-    gameInit();
+    if(frogboy::init()) {
+        gameInit();
 
-    while(frogboy::isActive()) {        
-        if(frogboy::waitForFrame()) {
-            frogboy::clearScreen();
-            gameDraw();
-            frogboy::refreshScreen();
+        while(frogboy::isActive()) {        
+            if(frogboy::waitForFrame()) {
+                frogboy::clearScreen();
+                gameDraw();
+                frogboy::refreshScreen();
 
-            gameUpdate();
+                gameUpdate();
+            }
         }
     }
-
     frogboy::destroy();
     return 0;
 }
