@@ -145,11 +145,16 @@ void gameUpdate() {
     if(wipeProgress < 48) {
         wipeProgress++;
     }
-    if(wipeProgress >= 48) {
+    if(wipeProgress >= 36) {
         particleUpdateAll();
         critterUpdateAll();
         bulletUpdateAll();
         playerUpdate();
         gameUpdateCamera();
+    }
+
+    if(playerStatus.nextMap != 0xFF) {
+        gameEnterDoor(static_cast<DoorType>(playerStatus.nextMap));
+        playerStatus.nextMap = 0xFF;
     }
 }

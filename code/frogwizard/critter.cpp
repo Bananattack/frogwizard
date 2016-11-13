@@ -234,7 +234,7 @@ void doorUpdate(uint8_t critterIndex) {
     && entityCollide(entityIndex, -1, ENT_OFFSET_PLAYER, -1)
     && frogboy::isPressed(frogboy::BUTTON_UP)) {
         playerStatus.usedDoor = true;
-        gameEnterDoor(static_cast<DoorType>(critter->data));
+        playerStatus.nextMap = critter->data;
     }
 }
 

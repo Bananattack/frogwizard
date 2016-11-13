@@ -7,6 +7,7 @@ struct PlayerStatus {
     uint8_t hp;
     uint8_t maxHP;
     uint8_t maxShotCount;
+    uint8_t nextMap;
     bool dir;
     bool usedDoor;
 };

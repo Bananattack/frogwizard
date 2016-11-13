@@ -43,7 +43,9 @@ void playerInitSystem() {
     playerStatus.hp = PLAYER_MAX_HP_START;
     playerStatus.maxHP = PLAYER_MAX_HP_START;
     playerStatus.maxShotCount = PLAYER_SHOOT_MAX_SHOTS;
+    playerStatus.nextMap = 0xFF;
     playerStatus.dir = true;
+    playerStatus.usedDoor = false;
 }
 
 void playerAdd(int16_t x, int16_t y) {
@@ -55,6 +57,9 @@ void playerAdd(int16_t x, int16_t y) {
         Entity* ent = &ents[entityIndex];
         ent->sprite = SPRITE_TYPE_PLAYER_1;
         ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
+        if(playerStatus.dir) {
+            ent->drawFlags |= ENT_DRAW_FLAG_HFLIP;
+        }
     }
 }
 
