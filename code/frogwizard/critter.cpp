@@ -79,7 +79,7 @@ void critterHurt(Entity* ent, Critter* critter, uint8_t damage) {
     }
 }
 
-void critterUpdateAll() {
+static void updateSpawnPoints() {
     uint8_t count = frogboy::readRom<uint8_t>(&critterSpawnCount[mapCurrentIndex]);
     const uint8_t* spawnPtr = frogboy::readRom<const uint8_t*>(&critterSpawnData[mapCurrentIndex]);
 
@@ -103,15 +103,19 @@ void critterUpdateAll() {
             critterSpawnKilled[i / 8] &= ~mask;
         }
     }
+}
 
-    for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
-        uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
-        Entity* ent = &ents[entityIndex];
+void critterUpdateAll() {
+    updateSpawnPoints();
 
+    Critter* critter = &critters[0];
+    Critter* critterEnd = critter + ENT_COUNT_CRITTER;
+    Entity* ent = &ents[ENT_OFFSET_CRITTER];
+
+    for(; critter != critterEnd; ++critter, ++ent) {
         if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
             entityUpdate(ent);
 
-            Critter* critter = &critters[critterIndex];
             frogboy::readRom<CritterHandler>(&critterUpdateHandler[critter->type])(ent, critter);
 
             ent->drawFlags &= ~ENT_DRAW_FLAG_HIDDEN;
@@ -133,11 +137,12 @@ void critterUpdateAll() {
 
 void critterDrawAll() {
     for(uint8_t layer = 0; layer != 2; ++layer) {
-        for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
-            uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
-            Entity* ent = &ents[entityIndex];
+        Critter* critter = &critters[0];
+        Critter* critterEnd = critter + ENT_COUNT_CRITTER;
+        Entity* ent = &ents[ENT_OFFSET_CRITTER];
+
+        for(; critter != critterEnd; ++critter, ++ent) {
             if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
-                Critter* critter = &critters[critterIndex];
                 if(frogboy::readRom<uint8_t>(&critterLayer[critter->type]) == layer) {
                     entityDraw(ent);
                 }
