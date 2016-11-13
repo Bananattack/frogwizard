@@ -144,8 +144,6 @@ namespace frogboy {
                         && e.key.keysym.sym == SDLK_ESCAPE) {
                             if(windowFullscreen) {
                                 toggleFullscreen();
-                            } else {
-                                windowOpen = false;
                             }
                         }
                         break;
