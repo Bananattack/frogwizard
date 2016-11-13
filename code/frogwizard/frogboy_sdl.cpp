@@ -19,11 +19,13 @@ namespace {
 
     uint32_t deltaTime = 0;
     uint32_t lastFrame = 0;
+    uint32_t lastMouseMove = 0;
 
     const uint8_t SCREEN_SCALE = 8;
 
     bool windowOpen = false;
     bool windowMaximized = false;
+    bool windowFullscreen = false;
 
     bool pressed[static_cast<size_t>(frogboy::BUTTON_COUNT)];
 
@@ -34,7 +36,7 @@ namespace {
         SDLK_DOWN, 
         SDLK_z,
         SDLK_x,
-        SDLK_ESCAPE,
+        SDLK_RETURN,
         SDLK_r,
     };
 }
@@ -47,12 +49,18 @@ namespace frogboy {
         window = SDL_CreateWindow(FROGBOY_APPNAME, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH * SCREEN_SCALE, SCREEN_HEIGHT * SCREEN_SCALE, SDL_WINDOW_RESIZABLE);
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_ACCELERATED);
 
+        SDL_SetWindowGrab(window, SDL_FALSE);
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+
         SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
         SDL_RenderSetLogicalSize(renderer, SCREEN_WIDTH, SCREEN_HEIGHT);
         screenTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
         screenSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0);
         clearScreen();
         lastFrame = SDL_GetTicks();
+        lastMouseMove = lastFrame;
+
+        windowFullscreen = false;
 
         memset(pressed, 0, sizeof(pressed));
 
@@ -96,6 +104,13 @@ namespace frogboy {
         SDL_RenderPresent(renderer);
     }
 
+    void toggleFullscreen() {
+        windowFullscreen = !windowFullscreen;
+        SDL_SetWindowFullscreen(window, windowFullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
+        SDL_ShowCursor(windowFullscreen ? SDL_DISABLE : SDL_ENABLE);
+        lastMouseMove = 0;
+    }
+
     bool waitForFrame() {
         if(!windowOpen) {
             return false;
@@ -112,9 +127,25 @@ namespace frogboy {
                         break;
                     case SDL_KEYDOWN:
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
-                            if(e.key.keysym.sym == keycodes[i]) {
+                            if((e.key.keysym.mod & KMOD_ALT) == 0
+                            && e.key.keysym.sym == keycodes[i]) {
                                 pressed[i] = true;
                                 break;
+                            }
+                        }
+
+                        if(e.key.repeat == 0
+                        && ((e.key.keysym.mod & KMOD_ALT) != 0 && e.key.keysym.sym == SDLK_RETURN
+                            || e.key.keysym.sym == SDLK_F11)) {
+                            toggleFullscreen();
+                        }
+
+                        if(e.key.repeat == 0
+                        && e.key.keysym.sym == SDLK_ESCAPE) {
+                            if(windowFullscreen) {
+                                toggleFullscreen();
+                            } else {
+                                windowOpen = false;
                             }
                         }
                         break;
@@ -142,11 +173,22 @@ namespace frogboy {
                                 break;
                             }
                         }
+                        break;
+                    case SDL_MOUSEMOTION:
+                        lastMouseMove = SDL_GetTicks();
+                        SDL_ShowCursor(SDL_ENABLE);
+                        break;
+
+                    case SDL_MOUSEBUTTONDOWN:
+                        if(e.button.button == SDL_BUTTON_LEFT
+                        && e.button.clicks == 2) {
+                            toggleFullscreen();                            
+                        }
                 }
             }
         }
 
-        if(!windowMaximized && resized) {
+        if(!windowFullscreen && !windowMaximized && resized) {
             int width, height;
             SDL_GetWindowSize(window, &width, &height);
             int xscale = (width + SCREEN_WIDTH / 2) / SCREEN_WIDTH;
@@ -162,6 +204,7 @@ namespace frogboy {
                 if(scale < 1) {
                     scale = 1;
                 }
+
                 SDL_SetWindowSize(window, scale * SCREEN_WIDTH, scale * SCREEN_HEIGHT);
             }
         }
@@ -170,12 +213,16 @@ namespace frogboy {
             uint32_t timer = SDL_GetTicks();
             if(lastFrame + FRAME_INTERVAL > timer
             && deltaTime < FRAME_INTERVAL) {
-                SDL_Delay(lastFrame + FRAME_INTERVAL - timer);
+                SDL_Delay(10);
             }
 
             timer = SDL_GetTicks();
             deltaTime += timer - lastFrame;
             lastFrame = timer;
+
+            if(windowFullscreen && timer - lastMouseMove > 3000) {
+                SDL_ShowCursor(SDL_DISABLE);
+            }
 
             if(deltaTime > FRAME_INTERVAL * 3) {
                 deltaTime = FRAME_INTERVAL * 3;
