@@ -15,7 +15,7 @@ bool gamePaused;
 const char pauseMessage[] FROGBOY_ROM_DATA = "PAUSED";
 
 uint8_t wipeProgress;
-const uint8_t wipeMasks[] FROGBOY_ROM_DATA = {0x00, 0x01, 0x11, 0x51, 0x55, 0xD5, 0xDD, 0xDF, 0xFF};
+const uint8_t wipeMasks[] FROGBOY_ROM_DATA = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x11, 0x51, 0x55, 0xD5, 0xDD, 0xDF, 0xFF};
 
 const uint8_t doorData[DOOR_TYPE_COUNT * 3] FROGBOY_ROM_DATA = {
     2, 2, MAP_TYPE_GRASSLAND,
@@ -142,12 +142,14 @@ void gameUpdate() {
         return;
     }
 
-    if(wipeProgress < 32) {
+    if(wipeProgress < 48) {
         wipeProgress++;
     }
-    particleUpdateAll();
-    critterUpdateAll();
-    bulletUpdateAll();
-    playerUpdate();
-    gameUpdateCamera();
+    if(wipeProgress >= 48) {
+        particleUpdateAll();
+        critterUpdateAll();
+        bulletUpdateAll();
+        playerUpdate();
+        gameUpdateCamera();
+    }
 }
