@@ -51,11 +51,11 @@ struct Entity {
 extern Entity ents[ENT_COUNT];
 
 void entityInitSystem();
-uint8_t entityAdd(int16_t x, int16_t y, uint8_t offset, uint8_t count);
-void entityRemove(uint8_t entityIndex);
-bool entityDetectFloor(uint8_t entityIndex);
-void entityUpdate(uint8_t entityIndex);
-void entityDraw(uint8_t entityIndex);
-bool entityCollide(uint8_t entityIndexA, int8_t borderA, uint8_t entityIndexB, int8_t borderB);
+Entity* entityAdd(int16_t x, int16_t y, uint8_t offset, uint8_t count);
+void entityRemove(Entity* ent);
+bool entityDetectFloor(Entity* ent);
+void entityUpdate(Entity* ent);
+void entityDraw(Entity* ent);
+bool entityCollide(Entity* ent, int8_t borderA, Entity* entB, int8_t borderB);
 
 #endif

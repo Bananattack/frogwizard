@@ -17,27 +17,28 @@ void entityInitSystem() {
     memset(ents, 0, sizeof(ents));
 }
 
-uint8_t entityAdd(int16_t x, int16_t y, uint8_t offset, uint8_t count) {
+Entity* entityAdd(int16_t x, int16_t y, uint8_t offset, uint8_t count) {
     uint8_t index = offset;    
+    Entity* ent = &ents[index];
     while(count != 0) {
-        Entity* ent = &ents[index];
         if(ent->controlFlags == 0) {
             memset(ent, 0, sizeof(Entity));
             ent->controlFlags = ENT_CTRL_FLAG_ACTIVE;
             ent->x = x;
             ent->y = y;
-            return index;
+            return ent;
         }
 
         ++index;
+        ++ent;
         --count;
     }
 
-    return 0xFF;
+    return nullptr;
 }
 
-void entityRemove(uint8_t entityIndex) {
-    ents[entityIndex].controlFlags = 0;
+void entityRemove(Entity* ent) {
+    ent->controlFlags = 0;
 }
 
 static bool detectFloor(Entity* ent, int8_t hx, int8_t hy, int8_t hw, int8_t hh) {
@@ -49,15 +50,13 @@ static bool detectFloor(Entity* ent, int8_t hx, int8_t hy, int8_t hw, int8_t hh)
         || mapGetPixelObs(checkPixelX + hw - 1, checkPixelY + hh);
 }
 
-bool entityDetectFloor(uint8_t entityIndex) {
-    Entity* ent = &ents[entityIndex];
+bool entityDetectFloor(Entity* ent) {
     int8_t hx, hy, hw, hh;
     hitboxGetData((HitboxType) ent->hitbox, &hx, &hy, &hw, &hh);
     return detectFloor(ent, hx, hy, hw, hh);
 }
 
-void entityUpdate(uint8_t entityIndex) {
-    Entity* ent = &ents[entityIndex];
+void entityUpdate(Entity* ent) {
     if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
         if((ent->controlFlags & ENT_CTRL_FLAG_IGNORE_OBS) != 0) {
             ent->x += ent->xspd;
@@ -131,8 +130,7 @@ void entityUpdate(uint8_t entityIndex) {
     }
 }
 
-void entityDraw(uint8_t entityIndex) {
-    Entity* ent = &ents[entityIndex];
+void entityDraw(Entity* ent) {
     if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
     && (ent->drawFlags & ENT_DRAW_FLAG_HIDDEN) == 0) {
         uint8_t entityFlags = ent->drawFlags;
@@ -150,9 +148,7 @@ void entityDraw(uint8_t entityIndex) {
     }
 }
 
-bool entityCollide(uint8_t entityIndexA, int8_t borderA, uint8_t entityIndexB, int8_t borderB) {
-    Entity* entA = &ents[entityIndexA];
-    Entity* entB = &ents[entityIndexB];
+bool entityCollide(Entity* entA, int8_t borderA, Entity* entB, int8_t borderB) {
     if((entA->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
     && (entB->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
         return hitboxCollide(entA->x / 16, entA->y / 16, (HitboxType) entA->hitbox, borderA, entB->x / 16, entB->y / 16, (HitboxType) entB->hitbox, borderB);

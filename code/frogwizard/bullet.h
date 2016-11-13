@@ -21,8 +21,8 @@ struct Bullet {
 };
 
 void bulletInitSystem();
-uint8_t bulletAdd(int16_t x, int16_t y, bool dir, BulletType type);
-void bulletRemove(uint8_t bulletIndex);
+Bullet* bulletAdd(int16_t x, int16_t y, bool dir, BulletType type);
+void bulletRemove(Entity* entity, Bullet* bullet);
 void bulletUpdateAll();
 void bulletDrawAll();
 

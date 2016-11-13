@@ -49,12 +49,11 @@ void playerInitSystem() {
 }
 
 void playerAdd(int16_t x, int16_t y) {
-    uint8_t entityIndex = entityAdd(x, y, ENT_OFFSET_PLAYER, ENT_COUNT_PLAYER);
+    Entity* ent = entityAdd(x, y, ENT_OFFSET_PLAYER, ENT_COUNT_PLAYER);
 
-    if(entityIndex != 0xFF) {
+    if(ent != nullptr) {
         memset(&player, 0, sizeof(Player));
 
-        Entity* ent = &ents[entityIndex];
         ent->sprite = SPRITE_TYPE_PLAYER_1;
         ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
         if(playerStatus.dir) {
@@ -67,7 +66,7 @@ void playerUpdate() {
     bool moved = false;
     Entity* ent = &ents[ENT_OFFSET_PLAYER];
 
-    entityUpdate(ENT_OFFSET_PLAYER);
+    entityUpdate(&ents[ENT_OFFSET_PLAYER]);
 
     bool left = frogboy::isPressed(frogboy::BUTTON_LEFT);
     bool right = frogboy::isPressed(frogboy::BUTTON_RIGHT);
@@ -167,7 +166,7 @@ void playerUpdate() {
     }
 
     if(player.jumpTimer == 0) {
-        if(!entityDetectFloor(ENT_OFFSET_PLAYER)) {
+        if(!entityDetectFloor(&ents[ENT_OFFSET_PLAYER])) {
             ent->yspd += PLAYER_FALL_YACCEL;
             if(ent->yspd > PLAYER_FALL_MAX_YSPEED) {
                 ent->yspd = PLAYER_FALL_MAX_YSPEED;
@@ -236,7 +235,7 @@ void playerHurt() {
 }
 
 void playerDraw() {
-    entityDraw(ENT_OFFSET_PLAYER);
+    entityDraw(&ents[ENT_OFFSET_PLAYER]);
 }
 
 void playerDrawHUD() {

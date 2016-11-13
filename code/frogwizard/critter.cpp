@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <string.h>
 #include "frogboy.h"
 #include "critter.h"
@@ -17,7 +18,7 @@ Critter critters[ENT_COUNT_CRITTER];
 uint8_t critterSpawnUsed[CRITTER_SPAWN_ARRAY_SIZE];
 uint8_t critterSpawnKilled[CRITTER_SPAWN_ARRAY_SIZE];
 
-typedef void (*CritterHandler)(uint8_t critterIndex);
+typedef void (*CritterHandler)(Entity* ent, Critter* critter);
 extern const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
@@ -32,11 +33,11 @@ void critterInitSystem() {
     memset(critterSpawnKilled, 0, sizeof(critterSpawnKilled));
 }
 
-uint8_t critterAdd(int16_t x, int16_t y, CritterType type, uint8_t data) {
-    uint8_t entityIndex = entityAdd(x, y, ENT_OFFSET_CRITTER, ENT_COUNT_CRITTER);
+Critter* critterAdd(int16_t x, int16_t y, CritterType type, uint8_t data) {
+    Entity* ent = entityAdd(x, y, ENT_OFFSET_CRITTER, ENT_COUNT_CRITTER);
 
-    if(entityIndex != 0xFF) {
-        uint8_t critterIndex = entityIndex - ENT_OFFSET_CRITTER;
+    if(ent != nullptr) {
+        ptrdiff_t critterIndex = ent - &ents[ENT_OFFSET_CRITTER];
         Critter* critter = &critters[critterIndex];
 
         memset(critter, 0, sizeof(Critter));
@@ -44,15 +45,14 @@ uint8_t critterAdd(int16_t x, int16_t y, CritterType type, uint8_t data) {
         critter->hp = frogboy::readRom<uint8_t>(&critterMaxHP[critter->type]);
         critter->data = data;
         critter->spawnIndex = 0xFF;
-        frogboy::readRom<CritterHandler>(&critterInitHandler[critter->type])(critterIndex);
-        return critterIndex;
+        frogboy::readRom<CritterHandler>(&critterInitHandler[critter->type])(ent, critter);
+        return critter;
     }
 
-    return 0xFF;
+    return nullptr;
 }
 
-void critterRemove(uint8_t critterIndex) {
-    Critter* critter = &critters[critterIndex];
+void critterRemove(Entity* ent, Critter* critter) {
     critter->type = 0;
 
     uint8_t spawnIndex = critter->spawnIndex;
@@ -62,14 +62,10 @@ void critterRemove(uint8_t critterIndex) {
         critterSpawnKilled[spawnIndex / 8] |= mask;
     }
 
-    entityRemove(ENT_OFFSET_CRITTER + critterIndex);
+    entityRemove(ent);
 }
 
-void critterHurt(uint8_t critterIndex, uint8_t damage) {
-    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;    
-    Entity* ent = &ents[entityIndex];
-    Critter* critter = &critters[critterIndex];
-
+void critterHurt(Entity* ent, Critter* critter, uint8_t damage) {
     if(critter->hp > damage) {
         critter->hp -= damage;
         critter->flashTimer = 16;
@@ -79,7 +75,7 @@ void critterHurt(uint8_t critterIndex, uint8_t damage) {
         particleAdd(ent->x + 4 * 16, ent->y + 6 * 16, 4, -4, 0x52, 20);
         particleAdd(ent->x + 4 * 16, ent->y + 6 * 16, -4, 4, 0x52, 20);
         particleAdd(ent->x + 4 * 16, ent->y + 6 * 16, 4, 4, 0x52, 20);
-        critterRemove(critterIndex);
+        critterRemove(ent, critter);
     }
 }
 
@@ -97,9 +93,9 @@ void critterUpdateAll() {
         if(gameCheckOnScreen(x + 8, y + 8, 64, 16)) {
             if((critterSpawnUsed[i / 8] & mask) == 0
             && (critterSpawnKilled[i / 8] & mask) == 0) {
-                uint8_t critterIndex = critterAdd(x * 16, y * 16, static_cast<CritterType>(type), data);
-                if(critterIndex != 0xFF) {
-                    critters[critterIndex].spawnIndex = i;
+                Critter* critter = critterAdd(x * 16, y * 16, static_cast<CritterType>(type), data);
+                if(critter != nullptr) {
+                    critter->spawnIndex = i;
                     critterSpawnUsed[i / 8] |= mask;
                 }
             }
@@ -113,10 +109,10 @@ void critterUpdateAll() {
         Entity* ent = &ents[entityIndex];
 
         if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
-            entityUpdate(entityIndex);
+            entityUpdate(ent);
 
             Critter* critter = &critters[critterIndex];
-            frogboy::readRom<CritterHandler>(&critterUpdateHandler[critter->type])(critterIndex);
+            frogboy::readRom<CritterHandler>(&critterUpdateHandler[critter->type])(ent, critter);
 
             ent->drawFlags &= ~ENT_DRAW_FLAG_HIDDEN;
             if(critter->flashTimer > 0) {
@@ -129,7 +125,7 @@ void critterUpdateAll() {
             }
 
             if(!gameCheckOnScreen(ent->x / 16 + 8, ent->y / 16 + 8, 112, 16)) {
-                critterRemove(critterIndex);
+                critterRemove(ent, critter);
             }
         }
     }
@@ -143,26 +139,22 @@ void critterDrawAll() {
             if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
                 Critter* critter = &critters[critterIndex];
                 if(frogboy::readRom<uint8_t>(&critterLayer[critter->type]) == layer) {
-                    entityDraw(entityIndex);
+                    entityDraw(ent);
                 }
             }
         }
     }
 }
 
-void coinInit(uint8_t critterIndex) {}
-void coinUpdate(uint8_t critterIndex) {}
+void coinInit(Entity* ent, Critter* critter) {}
+void coinUpdate(Entity* ent, Critter* critter) {}
 
 enum {
     WALKER_ACCEL = 2,
     WALKER_MAX_SPEED = 8,
 };
 
-void walkerInit(uint8_t critterIndex) {
-    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
-    Entity* ent = &ents[entityIndex];
-    Critter* critter = &critters[critterIndex];
-
+void walkerInit(Entity* ent, Critter* critter) {
     Entity* playerEnt = &ents[ENT_OFFSET_PLAYER];
 
     ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
@@ -175,11 +167,7 @@ void walkerInit(uint8_t critterIndex) {
     critter->var[1] = faceLeft ? 0 : 1;
 }
 
-void walkerUpdate(uint8_t critterIndex) {
-    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
-    Entity* ent = &ents[entityIndex];
-    Critter* critter = &critters[critterIndex];
-
+void walkerUpdate(Entity* ent, Critter* critter) {
     critter->var[0]++;
     if(critter->var[0] > 12) {
         critter->var[0] = 0;
@@ -213,25 +201,20 @@ void walkerUpdate(uint8_t critterIndex) {
         critter->var[3] = 0;
     }
 
-    if(entityCollide(entityIndex, -1, ENT_OFFSET_PLAYER, -1)) {
+    if(entityCollide(ent, -1, &ents[ENT_OFFSET_PLAYER], -1)) {
         playerHurt();
     }
 }
 
-void doorInit(uint8_t critterIndex) {
-    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
-    Entity* ent = &ents[entityIndex];
+void doorInit(Entity* ent, Critter* critter) {
+    static_cast<void>(critter);
     ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
     ent->sprite = SPRITE_TYPE_DOOR;
 }
 
-void doorUpdate(uint8_t critterIndex) {
-    uint8_t entityIndex = ENT_OFFSET_CRITTER + critterIndex;
-    Entity* ent = &ents[entityIndex];
-    Critter* critter = &critters[critterIndex];
-
+void doorUpdate(Entity* ent, Critter* critter) {
     if(!playerStatus.usedDoor
-    && entityCollide(entityIndex, -1, ENT_OFFSET_PLAYER, -1)
+    && entityCollide(ent, -1, &ents[ENT_OFFSET_PLAYER], -1)
     && frogboy::isPressed(frogboy::BUTTON_UP)) {
         playerStatus.usedDoor = true;
         playerStatus.nextMap = critter->data;

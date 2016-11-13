@@ -19,10 +19,12 @@ struct Critter {
     uint8_t var[5];
 };
 
+extern Critter critters[ENT_COUNT_CRITTER];
+
 void critterInitSystem();
-uint8_t critterAdd(int16_t x, int16_t y, CritterType type, uint8_t data);
-void critterRemove(uint8_t critterIndex);
-void critterHurt(uint8_t critterIndex, uint8_t damage);
+Critter* critterAdd(int16_t x, int16_t y, CritterType type, uint8_t data);
+void critterRemove(Entity* ent, Critter* critter);
+void critterHurt(Entity* ent, Critter* critter, uint8_t damage);
 void critterUpdateAll();
 void critterDrawAll();
 
