@@ -67,10 +67,12 @@ enum {
 };
  
 bool gameCheckOnScreen(int16_t x, int16_t y, uint8_t borderX, uint8_t borderY) {
-    return x - mapCameraX < 128 + borderX
-        && x - mapCameraX > -borderX
-        && y - mapCameraY < 64 + borderY
-        && y - mapCameraY > -borderY;
+    static_cast<void>(y);
+    static_cast<void>(borderY);
+    return x - mapCameraX < frogboy::SCREEN_WIDTH + borderX
+        && x - mapCameraX > -borderX;
+        //&& y - mapCameraY < frogboy::SCREEN_HEIGHT + borderY
+        //&& y - mapCameraY > -borderY;
 }
 
 void gameUpdateCamera() {

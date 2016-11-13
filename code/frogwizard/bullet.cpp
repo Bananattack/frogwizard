@@ -132,7 +132,7 @@ void explosionInit(uint8_t bulletIndex) {
     uint8_t entityIndex = ENT_OFFSET_BULLET + bulletIndex;
     Entity* ent = &ents[entityIndex];
     Bullet* bullet = &bullets[bulletIndex];
-    (void) bullet;
+    static_cast<void>(bullet);
 
     ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS;
     ent->sprite = SPRITE_TYPE_CIRCLE;
