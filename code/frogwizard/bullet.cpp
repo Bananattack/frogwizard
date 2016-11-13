@@ -52,21 +52,19 @@ void bulletRemove(Entity* ent, Bullet* bullet) {
 }
 
 void bulletUpdateAll() {
-    for(uint8_t bulletIndex = 0; bulletIndex != ENT_COUNT_BULLET; ++bulletIndex) {
-        uint8_t entityIndex = ENT_OFFSET_BULLET + bulletIndex;
-        Entity* ent = &ents[entityIndex];
-
+    Bullet* bullet = &bullets[0];
+    Bullet* bulletEnd = bullet + ENT_COUNT_BULLET;
+    Entity* ent = &ents[ENT_OFFSET_BULLET];
+    for(; bullet != bulletEnd; ++bullet, ++ent) {
         if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
             entityUpdate(ent);
 
-            Bullet* bullet = &bullets[bulletIndex];
-
             uint8_t damage = frogboy::readRom<uint8_t>(&bulletDamage[bullet->type]);
             if(damage > 0) {
-                for(uint8_t critterIndex = 0; critterIndex != ENT_COUNT_CRITTER; ++critterIndex) {
-                    uint8_t targetEntIndex = ENT_OFFSET_CRITTER + critterIndex;
-                    Entity* targetEnt = &ents[targetEntIndex];
-                    Critter* critter = &critters[critterIndex];
+                Critter* critter = &critters[0];
+                Critter* critterEnd = critter + ENT_COUNT_CRITTER;
+                Entity* targetEnt = &ents[ENT_OFFSET_CRITTER];
+                for(; critter != critterEnd; ++critter, ++targetEnt) {
                     if((targetEnt->controlFlags & ENT_CTRL_FLAG_BULLET_TARGET) != 0
                     && entityCollide(ent, 1, targetEnt, 1)) {
                         critterHurt(targetEnt, critter, damage);

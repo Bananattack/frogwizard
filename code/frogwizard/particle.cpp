@@ -34,8 +34,9 @@ void particleStarAdd(int16_t x, int16_t y) {
 }
 
 void particleUpdateAll() {
-    for(uint8_t i = 0; i != PARTICLE_COUNT; ++i) {
-        Particle* particle = &particles[i];
+    Particle* particle = &particles[0];
+    Particle* particleEnd = particle + PARTICLE_COUNT;
+    for(; particle != particleEnd; ++particle) {
         if(particle->time > 0) {
             particle->time--;
             particle->x += particle->xspd;
@@ -45,8 +46,9 @@ void particleUpdateAll() {
 }
 
 void particleDrawAll() {
-    for(uint8_t i = 0; i != PARTICLE_COUNT; ++i) {
-        Particle* particle = &particles[i];
+    Particle* particle = &particles[0];
+    Particle* particleEnd = particle + PARTICLE_COUNT;
+    for(; particle != particleEnd; ++particle) {
         if(particle->time > 0) {
             frogboy::drawTile(particle->x / 16 - mapCameraX, particle->y / 16 - mapCameraY, spritesBitmap, particle->tile, 1, false, false);
         }
