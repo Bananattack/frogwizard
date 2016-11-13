@@ -162,13 +162,21 @@
     <ClInclude Include="critter.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="frogboy.h" />
+    <ClInclude Include="frogwizard_rc_resource.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="hitbox.h" />
     <ClInclude Include="map.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprites_bitmap.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="frogwizard.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon1.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
