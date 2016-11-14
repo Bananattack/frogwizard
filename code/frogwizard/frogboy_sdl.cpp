@@ -39,6 +39,11 @@ namespace {
         SDLK_RETURN,
         SDLK_r,
     };
+
+    void audioCallback(void* userdata, uint8_t* rawBuffer, int len) {
+        int16_t* data = reinterpret_cast<int16_t*>(rawBuffer); 
+        static_cast<void>(data); // TODO: actually do an audio callback for SDL
+    }
 }
 
 namespace frogboy {
@@ -293,6 +298,11 @@ namespace frogboy {
     uint8_t* getScreenBuffer() {
         return screenBuffer;
     }
+
+    void playTone(uint16_t frequency, uint32_t duration) {}
+    void playMusic(const uint8_t* data) {}
+    void stopMusic() {}
+    bool isMusicPlaying() { return false; }
 
     bool isPressed(Button button) {
         return pressed[static_cast<size_t>(button)];

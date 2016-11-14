@@ -24,7 +24,26 @@ const uint8_t doorData[DOOR_TYPE_COUNT * 3] FROGBOY_ROM_DATA = {
     5, 2, MAP_TYPE_HOUSE2,
     40, 1, MAP_TYPE_GRASSLAND,
     2, 2, MAP_TYPE_HOUSE3,
-    64, 2, MAP_TYPE_GRASSLAND,
+    67, 2, MAP_TYPE_GRASSLAND,
+};
+
+enum {
+    SONG_TEMPO = 150,
+    SONG_QUARTER_NOTE = 60000 / SONG_TEMPO,
+    SONG_EIGHTH_NOTE = SONG_QUARTER_NOTE / 2,
+};
+
+const uint8_t musicScore[] FROGBOY_ROM_DATA = {
+    frogboy::MUSIC_OPCODE_PLAY_NOTE, 60,
+    SONG_EIGHTH_NOTE >> 8, SONG_EIGHTH_NOTE & 0xFF,
+    frogboy::MUSIC_OPCODE_PLAY_NOTE, 64,
+    SONG_EIGHTH_NOTE >> 8, SONG_EIGHTH_NOTE & 0xFF,
+    frogboy::MUSIC_OPCODE_PLAY_NOTE, 67,
+    SONG_EIGHTH_NOTE >> 8, SONG_EIGHTH_NOTE & 0xFF,
+    frogboy::MUSIC_OPCODE_PLAY_NOTE, 71,
+    SONG_EIGHTH_NOTE >> 8, SONG_EIGHTH_NOTE & 0xFF,
+    frogboy::MUSIC_OPCODE_STOP_NOTE,
+    frogboy::MUSIC_OPCODE_STOP,
 };
 
 void gameInit() {
@@ -36,6 +55,7 @@ void gameInit() {
     playerUpdate();
     gamePaused = false;
     pausePressed = true;
+    //frogboy::playMusic(musicScore);
 }
 
 void gameDraw() {
@@ -146,6 +166,9 @@ void gameUpdate() {
 
     if(wipeProgress < 48) {
         wipeProgress++;
+        if(wipeProgress == 20 && playerStatus.usedDoor) {
+            frogboy::playTone(300, 4);
+        }
     }
     if(wipeProgress >= 36) {
         particleUpdateAll();

@@ -112,6 +112,7 @@ void fireballUpdate(Entity* ent, Bullet* bullet) {
         bulletRemove(ent, bullet);
 
         if(hitObs) {
+            frogboy::playTone(150, 10);
             bulletAdd(x, y, false, BULLET_TYPE_EXPLOSION);
         }
         return;

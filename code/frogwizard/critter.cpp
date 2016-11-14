@@ -67,10 +67,12 @@ void critterRemove(Entity* ent, Critter* critter) {
 
 void critterHurt(Entity* ent, Critter* critter, uint8_t damage) {
     if(critter->hp > damage) {
+        frogboy::playTone(300, 6);
         critter->hp -= damage;
         critter->flashTimer = 16;
         ent->drawFlags |= ENT_DRAW_FLAG_FLASH;
     } else {
+        frogboy::playTone(300, 15);
         particleAdd(ent->x + 4 * 16, ent->y + 6 * 16, -4, -4, 0x52, 20);
         particleAdd(ent->x + 4 * 16, ent->y + 6 * 16, 4, -4, 0x52, 20);
         particleAdd(ent->x + 4 * 16, ent->y + 6 * 16, -4, 4, 0x52, 20);
@@ -221,6 +223,7 @@ void doorUpdate(Entity* ent, Critter* critter) {
     if(!playerStatus.usedDoor
     && entityCollide(ent, -1, &ents[ENT_OFFSET_PLAYER], -1)
     && frogboy::isPressed(frogboy::BUTTON_UP)) {
+        frogboy::playTone(390, 10);
         playerStatus.usedDoor = true;
         playerStatus.nextMap = critter->data;
     }
@@ -254,7 +257,7 @@ const uint8_t FROGBOY_ROM_DATA grasslandSpawnData[] = {
     10, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE,
     24, 1, CRITTER_TYPE_WALKER, 0,
     40, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE2,
-    64, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
+    67, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
 };
 
 const uint8_t houseSpawnData[] FROGBOY_ROM_DATA = {

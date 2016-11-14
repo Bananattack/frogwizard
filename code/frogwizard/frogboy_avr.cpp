@@ -76,6 +76,22 @@ namespace frogboy {
         return arduboy.getBuffer();
     }
 
+    void playTone(uint16_t frequency, uint32_t duration) {
+        arduboy.tunes.tone(frequency, duration);
+    }
+
+    void playMusic(const uint8_t* data) {
+        arduboy.tunes.playScore(data);
+    }
+
+    void stopMusic() {
+        arduboy.tunes.stopScore();        
+    }
+
+    bool isMusicPlaying() {
+        return arduboy.tunes.playing();
+    }
+
     bool isPressed(Button button) {
         return arduboy.pressed(frogboy::readRom<uint8_t>(keycodes + static_cast<uint8_t>(button)));
     }

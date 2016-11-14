@@ -54,6 +54,7 @@ void playerAdd(int16_t x, int16_t y) {
     if(ent != nullptr) {
         memset(&player, 0, sizeof(Player));
 
+        player.landed = true;
         ent->sprite = SPRITE_TYPE_PLAYER_1;
         ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
         if(playerStatus.dir) {
@@ -130,6 +131,7 @@ void playerUpdate() {
             player.bufferShootTimer = 0;
             player.shootTimer = PLAYER_SHOOT_COOLDOWN;
             player.shotCount++;
+            frogboy::playTone(500, 16);
         }
     }
 
@@ -137,6 +139,7 @@ void playerUpdate() {
         if(!player.jumpPressed) {
             player.bufferJumpTimer = PLAYER_JUMP_INPUT_BUFFER_TIME;
             player.jumpPressed = true;
+            frogboy::playTone(250, 6);
         }
     } else {
         player.jumpPressed = false;
@@ -185,6 +188,7 @@ void playerUpdate() {
                     particleStarAdd(ent->x + 10 * 16, ent->y + 4 * 16);
                 }
                 player.fallTimer = 0;
+                frogboy::playTone(200, 10);
             }
         }
     }
@@ -218,6 +222,7 @@ void playerUpdate() {
 void playerHurt() {
     if(player.hurtTimer == 0) {
         Entity* ent = &ents[ENT_OFFSET_PLAYER];
+        frogboy::playTone(890, 20);
 
         if(playerStatus.hp > 0) {
             playerStatus.hp--;
