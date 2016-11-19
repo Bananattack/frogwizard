@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include "frogboy.h"
@@ -217,6 +218,8 @@ void doorInit(Entity* ent, Critter* critter) {
     static_cast<void>(critter);
     ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
     ent->sprite = SPRITE_TYPE_DOOR;
+    ent->collisionCategory = COLLISION_CATEGORY_ZONE;
+    ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS | ENT_CTRL_FLAG_IGNORE_SLOPES;
 }
 
 void doorUpdate(Entity* ent, Critter* critter) {
@@ -229,9 +232,55 @@ void doorUpdate(Entity* ent, Critter* critter) {
     }
 }
 
+void blockInit(Entity* ent, Critter* critter) {
+    static_cast<void>(critter);
+    ent->hitbox = HITBOX_TYPE_BLOCK;
+    ent->collisionCategory = COLLISION_CATEGORY_BLOCK;
+    ent->sprite = SPRITE_TYPE_BLOCK;
+}
+
+static bool blockCheckPushed(Entity* ent, Entity* playerEnt) {
+    return (playerEnt->xspd < 0 || playerEnt->xspd > 0)
+        && (frogboy::isPressed(frogboy::BUTTON_LEFT) || frogboy::isPressed(frogboy::BUTTON_RIGHT))
+        && hitboxCollide(ent->x / 16,
+            ent->y / 16,
+            (HitboxType) ent->hitbox,
+            0,
+            (playerEnt->x + playerEnt->xspd * 4) / 16,
+            playerEnt->y / 16 + ((ent->status & ENT_STATUS_DOWNHILL) != 0 ? 4 : 0),
+            (HitboxType) HITBOX_TYPE_PUSH_DETECTION,
+            0);
+}
+
+void blockUpdate(Entity* ent, Critter* critter) {
+    Entity* playerEnt = &ents[ENT_OFFSET_PLAYER];
+
+    if(blockCheckPushed(ent, playerEnt)) {
+        player.pushing = true;
+        if(critter->var[0] >= 16) {
+            ent->xspd = playerEnt->xspd;
+        } else {
+            critter->var[0]++;
+        }
+    } else {        
+        ent->xspd = ent->xspd * 31 / 32;
+        critter->var[0] = 0;
+    }
+
+    if(!entityDetectFloor(ent)) {
+        ent->yspd += 2;
+        if(ent->yspd > 32) {
+            ent->yspd = 32;
+        }
+    } else {
+        ent->yspd = 0;
+    }
+}
+
 const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     0,
     3,
+    0,
     0,
 };
 
@@ -239,23 +288,28 @@ const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     1,
     1,
     0,
+    1,
 };
 
 const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinInit,
     walkerInit,
     doorInit,
+    blockInit,
 };
 
 const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     coinUpdate,
     walkerUpdate,
     doorUpdate,
+    blockUpdate,
 };
 
 const uint8_t FROGBOY_ROM_DATA grasslandSpawnData[] = {
     10, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE,
+    16, 2, CRITTER_TYPE_BLOCK, 0,
     24, 1, CRITTER_TYPE_WALKER, 0,
+    49, 1, CRITTER_TYPE_BLOCK, 0,
     40, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE2,
     67, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
 };

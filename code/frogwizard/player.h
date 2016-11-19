@@ -25,6 +25,7 @@ struct Player {
     bool landed;
     bool jumpPressed;
     bool shootPressed;
+    bool pushing;
 };
 
 extern PlayerStatus playerStatus;

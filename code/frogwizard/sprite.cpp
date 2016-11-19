@@ -85,6 +85,14 @@ const uint8_t doorSprite1[] FROGBOY_ROM_DATA = {
     0x08, 0x08, SPRITE_ATTR_HFLIP, 0x5B,
 };
 
+const uint8_t blockSprite1[] FROGBOY_ROM_DATA = {
+    0x04, 0x10, 0x10,
+    0x00, 0x00, 0x00, 0x6A,
+    0x08, 0x00, SPRITE_ATTR_HFLIP, 0x6A,
+    0x00, 0x08, SPRITE_ATTR_VFLIP, 0x6A,
+    0x08, 0x08, SPRITE_ATTR_HFLIP | SPRITE_ATTR_VFLIP, 0x6A,
+};
+
 const uint8_t* const spriteAddresses[SPRITE_TYPE_COUNT] FROGBOY_ROM_DATA = {
     playerSprite1,
     playerSprite2,
@@ -94,6 +102,7 @@ const uint8_t* const spriteAddresses[SPRITE_TYPE_COUNT] FROGBOY_ROM_DATA = {
     walkerSprite1,
     walkerSprite2,
     doorSprite1,
+    blockSprite1,
 };
 
 void spriteDraw(int16_t x, int16_t y, SpriteType sprite, uint8_t flags) {

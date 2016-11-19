@@ -14,6 +14,8 @@ enum {
     PLAYER_RUN_XACCEL = 6,
     PLAYER_RUN_MAX_XSPEED = 20,
 
+    PLAYER_PUSH_MAX_XSPEED = 16,
+
     PLAYER_FRICTION_MULTIPLIER = 14,
     PLAYER_FRICTION_DIVIDER = 16,
 
@@ -90,18 +92,23 @@ void playerUpdate() {
         }
     }
     
+    int16_t maxSpeed = PLAYER_RUN_MAX_XSPEED;
+    if(player.pushing) {
+        maxSpeed = PLAYER_PUSH_MAX_XSPEED;
+    }
+
     if(left) {
         ent->xspd -= PLAYER_RUN_XACCEL;
-        if(ent->xspd < -PLAYER_RUN_MAX_XSPEED) {
-            ent->xspd = -PLAYER_RUN_MAX_XSPEED;
+        if(ent->xspd < -maxSpeed) {
+            ent->xspd = -maxSpeed;
         }        
         playerStatus.dir = false;
         moved = true;
     }
     else if(right) {
         ent->xspd += PLAYER_RUN_XACCEL;
-        if(ent->xspd > PLAYER_RUN_MAX_XSPEED) {
-            ent->xspd = PLAYER_RUN_MAX_XSPEED;
+        if(ent->xspd > maxSpeed) {
+            ent->xspd = maxSpeed;
         }
         playerStatus.dir = true;
         moved = true;
@@ -184,11 +191,11 @@ void playerUpdate() {
                 player.landed = true;
                 ent->yspd = 0;
 
-                if(player.fallTimer > 16) {                    
+                if(player.fallTimer > 14) {                    
                     particleStarAdd(ent->x + 10 * 16, ent->y + 4 * 16);
+                    frogboy::playTone(200, 10);
                 }
                 player.fallTimer = 0;
-                frogboy::playTone(200, 10);
             }
         }
     }
@@ -217,6 +224,8 @@ void playerUpdate() {
     } else {
         ent->sprite = player.timer < 1 || player.timer >= 9 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2;
     }
+
+    player.pushing = false;
 }
 
 void playerHurt() {

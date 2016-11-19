@@ -6,7 +6,7 @@
 enum EntityCtrlFlags {
     ENT_CTRL_FLAG_IGNORE_OBS = 1 << 0,
     ENT_CTRL_FLAG_IGNORE_SLOPES = 1 << 1,
-    ENT_CTRL_FLAG_BULLET_TARGET = 1 << 2,
+    ENT_CTRL_FLAG_BULLET_TARGET = 1 << 3,
     ENT_CTRL_FLAG_ACTIVE = 1 << 7,
 };
 
@@ -21,7 +21,21 @@ enum EntityStatus {
     ENT_STATUS_HIT_OBS_X = 1 << 0,
     ENT_STATUS_HIT_OBS_Y = 1 << 1,
     ENT_STATUS_HIT_OBS = ENT_STATUS_HIT_OBS_X | ENT_STATUS_HIT_OBS_Y,    
-    ENT_STATUS_UPHILL = 1 << 2
+    ENT_STATUS_UPHILL = 1 << 2,
+    ENT_STATUS_DOWNHILL = 1 << 3,
+};
+
+enum CollisionCategory {
+    COLLISION_CATEGORY_CRITTER,
+    COLLISION_CATEGORY_BLOCK,
+    COLLISION_CATEGORY_ZONE,
+
+    COLLISION_CATEGORY_COUNT,
+};
+
+enum CollisionMask {
+    COLLISION_MASK_CRITTER = 1 << COLLISION_CATEGORY_CRITTER,
+    COLLISION_MASK_BLOCK = 1 << COLLISION_CATEGORY_BLOCK,
 };
 
 enum {
@@ -46,6 +60,7 @@ struct Entity {
     uint8_t status;
     uint8_t sprite;
     uint8_t hitbox;
+    uint8_t collisionCategory;
 };
 
 extern Entity ents[ENT_COUNT];

@@ -4,10 +4,13 @@
 // x y w h
 static const int8_t hitboxData[(int) HITBOX_TYPE_COUNT * 4] FROGBOY_ROM_DATA = {
     0, 0, 0, 0,
+    0, 0, 1, 1,
     0, 0, 16, 16,
     0, 0, 8, 8,
     4, 4, 8, 8,
     1, 4, 14, 12,
+    1, 1, 14, 15,
+    0, -2, 16, 18,
 };
 
 bool hitboxCollide(int16_t xa, int16_t ya, HitboxType hitboxA, int8_t borderA, int16_t xb, int16_t yb, HitboxType hitboxB, int8_t borderB) {
