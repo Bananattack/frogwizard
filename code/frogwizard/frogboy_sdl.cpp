@@ -237,7 +237,7 @@ namespace frogboy {
                     case SDL_KEYDOWN:
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
                             const auto& keycode = keycodes[i];
-                            if((keycode.mod == 0
+                            if(((keycode.mod == 0 && e.key.keysym.mod == 0)
                                 || (e.key.keysym.mod & keycode.mod) != 0)
                             && e.key.keysym.sym == keycode.code) {
                                 pressed[i] = true;
@@ -261,7 +261,8 @@ namespace frogboy {
                     case SDL_KEYUP:
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
                             const auto& keycode = keycodes[i];
-                            if((keycode.mod == 0 || (e.key.keysym.mod & keycode.mod) != 0)
+                            if(((keycode.mod == 0 && e.key.keysym.mod == 0)
+                                || (e.key.keysym.mod & keycode.mod) != 0)
                             && e.key.keysym.sym == keycode.code) {
                                 pressed[i] = false;
                                 break;

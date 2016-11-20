@@ -146,7 +146,6 @@ void playerUpdate() {
         if(!player.jumpPressed) {
             player.bufferJumpTimer = PLAYER_JUMP_INPUT_BUFFER_TIME;
             player.jumpPressed = true;
-            frogboy::playTone(250, 6);
         }
     } else {
         player.jumpPressed = false;
@@ -163,6 +162,7 @@ void playerUpdate() {
             player.bufferJumpTimer = 0;
             player.landed = false;
             player.jumpTimer = PLAYER_JUMP_MAX_DURATION;
+            frogboy::playTone(250, 6);
         }
     }
 
