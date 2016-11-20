@@ -249,11 +249,11 @@ void Player::hurt() {
     }
 }
 
-void Player::draw() {
+void Player::draw() const {
     Entity::data[ENT_OFFSET_PLAYER].draw();
 }
 
-void Player::drawHUD() {
+void Player::drawHUD() const {
     uint8_t h;
     for(h = 0; h < status.maxHP; ++h) {
         for(uint8_t i = 0; i < 3; ++i) {

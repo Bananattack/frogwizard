@@ -37,8 +37,8 @@ struct Player {
 
     void update();
     void hurt();
-    void draw();
-    void drawHUD();
+    void draw() const;
+    void drawHUD() const;
 };
 
 extern Player player;
