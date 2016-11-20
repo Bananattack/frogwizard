@@ -18,7 +18,7 @@ enum HitboxType {
 
 namespace hitbox {
     bool collide(int16_t xa, int16_t ya, HitboxType hitboxA, int8_t borderA, int16_t xb, int16_t yb, HitboxType hitboxB, int8_t borderB);
-    void read(HitboxType hitbox, int8_t* x, int8_t* y, int8_t* w, int8_t* h);
+    void read(HitboxType hitbox, int8_t& x, int8_t& y, int8_t& w, int8_t& h);
 };
 
 #endif

@@ -89,7 +89,7 @@ bool Entity::detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignore
 
 bool Entity::detectFloor() {
     int8_t hx, hy, hw, hh;
-    hitbox::read(static_cast<HitboxType>(hitbox), &hx, &hy, &hw, &hh);
+    hitbox::read(static_cast<HitboxType>(hitbox), hx, hy, hw, hh);
     return detectFloor(hx, hy, hw, hh, false);
 }
 
@@ -100,7 +100,7 @@ void Entity::update() {
             y += yspd;
         } else {
             int8_t hx, hy, hw, hh;
-            hitbox::read(static_cast<HitboxType>(hitbox), &hx, &hy, &hw, &hh);
+            hitbox::read(static_cast<HitboxType>(hitbox), hx, hy, hw, hh);
 
             int16_t checkPixelX = (x + xspd) / 16 + hx;
             int16_t checkPixelY = y / 16 + hy;
