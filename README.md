@@ -13,7 +13,7 @@ Open `code/frogwizard/frogwizard.ino` in the Arduino IDE. Set the appropriate po
 
 Open `code/frogwizard.sln` in Visual Studio 2015. Build the solution and run the programm with the debugger.
 
-Alternatively, you can build the solution, and then run the executable from the output folder. It should be portable with all dependencies statically included. There's build setups for Debug and Release for both x86 and x64, pick whatever works best for you.
+Alternatively, you can build the solution, and then run the executable from the output folder. It should be a portable exe with all dependencies statically included. There's build setups for Debug and Release for both x86 and x64, pick whatever works best for you.
 
 ##Mac / Linux / etc
 
