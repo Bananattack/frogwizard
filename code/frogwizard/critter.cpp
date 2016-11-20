@@ -43,7 +43,7 @@ Critter* Critter::add(int16_t x, int16_t y, CritterType type, uint8_t metadata) 
     return nullptr;
 }
 
-bool Critter::canPersist(CritterType type) {
+bool Critter::canPersistType(CritterType type) {
     return frogboy::readRom<bool>(&critterCanHibernate[type]);
 }
 

@@ -27,7 +27,7 @@ struct Critter {
     static Critter* add(int16_t x, int16_t y, CritterType type, uint8_t data);
     static void updateAll();
     static void drawAll();
-    static bool canPersist(CritterType type);
+    static bool canPersistType(CritterType type);
     void remove(Entity* ent);
     void hurt(Entity* ent, uint8_t damage);
 };

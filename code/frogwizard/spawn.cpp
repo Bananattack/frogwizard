@@ -86,7 +86,7 @@ namespace spawn {
             uint8_t data = frogboy::readRom<uint8_t>(spawnPtr++);
             uint8_t mask = 1 << (i % 8);
 
-            if(Critter::canPersist(static_cast<CritterType>(type))
+            if(Critter::canPersistType(static_cast<CritterType>(type))
             && suspendedSpawns[i].x != 0x7FFF) {
                 x = suspendedSpawns[i].x;
                 y = suspendedSpawns[i].y;
