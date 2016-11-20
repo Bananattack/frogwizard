@@ -12,14 +12,21 @@ enum MapType {
     MAP_TYPE_COUNT,
 };
 
-void mapInitSystem();
-uint8_t mapGetPixelAttribute(int16_t x, int16_t y);
-bool mapGetPixelAttributeObs(uint8_t attr, int16_t x, int16_t y);
-bool mapGetPixelObs(int16_t x, int16_t y);
-void mapDraw();
-uint8_t mapGetWidth();
+struct Camera;
 
-extern uint8_t mapCurrentIndex;
-extern int16_t mapCameraX, mapCameraY;
+struct Map {
+    uint8_t currentIndex;
+
+    static void initSystem();
+
+    uint8_t getPixelAttribute(int16_t x, int16_t y) const;
+    bool getPixelAttributeObs(uint8_t attr, int16_t x, int16_t y) const;
+    bool getPixelObs(int16_t x, int16_t y) const;
+    uint8_t getWidth() const;
+    uint8_t getHeight() const;
+    void draw(const Camera& camera) const;
+};
+
+extern Map map;
 
 #endif

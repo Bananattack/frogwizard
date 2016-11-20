@@ -5,27 +5,27 @@
 #include "player.h"
 #include "critter.h"
 #include "sprite.h"
-#include "game.h"
 #include "particle.h"
 #include "hitbox.h"
-
-Bullet bullets[ENT_COUNT_BULLET];
+#include "camera.h"
 
 typedef void (*BulletHandler)(Entity* ent, Bullet* bullet);
 extern const uint8_t bulletDamage[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const BulletHandler bulletInitHandler[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const BulletHandler bulletUpdateHandler[BULLET_TYPE_COUNT] FROGBOY_ROM_DATA;
 
-void bulletInitSystem() {
-    memset(bullets, 0, sizeof(bullets));
+Bullet Bullet::data[ENT_COUNT_BULLET];
+
+void Bullet::initSystem() {
+    memset(data, 0, sizeof(data));
 }
 
-Bullet* bulletAdd(int16_t x, int16_t y, bool dir, BulletType type) {
-    Entity* ent = entityAdd(x, y, ENT_OFFSET_BULLET, ENT_COUNT_BULLET);
+Bullet* Bullet::add(int16_t x, int16_t y, bool dir, BulletType type) {
+    Entity* ent = Entity::add(x, y, ENT_OFFSET_BULLET, ENT_COUNT_BULLET);
 
     if(ent != nullptr) {
-        ptrdiff_t bulletIndex = ent - &ents[ENT_OFFSET_BULLET];
-        Bullet* bullet = &bullets[bulletIndex];
+        ptrdiff_t bulletIndex = ent - &Entity::data[ENT_OFFSET_BULLET];
+        Bullet* bullet = &data[bulletIndex];
 
         memset(bullet, 0, sizeof(Bullet));
         bullet->type = type;
@@ -40,35 +40,24 @@ Bullet* bulletAdd(int16_t x, int16_t y, bool dir, BulletType type) {
     return nullptr;
 }
 
-void bulletRemove(Entity* ent, Bullet* bullet) {
-    if((bullet->flags & BULLET_FLAG_PLAYER_BULLET) != 0) {
-        if(player.shotCount > 0) {
-            player.shotCount--;
-        }
-    }
-
-    bullet->type = 0;
-    entityRemove(ent);
-}
-
-void bulletUpdateAll() {
-    Bullet* bullet = &bullets[0];
+void Bullet::updateAll() {
+    Bullet* bullet = &data[0];
     Bullet* bulletEnd = bullet + ENT_COUNT_BULLET;
-    Entity* ent = &ents[ENT_OFFSET_BULLET];
+    Entity* ent = &Entity::data[ENT_OFFSET_BULLET];
     for(; bullet != bulletEnd; ++bullet, ++ent) {
         if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
-            entityUpdate(ent);
+            ent->update();
 
             uint8_t damage = frogboy::readRom<uint8_t>(&bulletDamage[bullet->type]);
             if(damage > 0) {
-                Critter* critter = &critters[0];
+                Critter* critter = &Critter::data[0];
                 Critter* critterEnd = critter + ENT_COUNT_CRITTER;
-                Entity* targetEnt = &ents[ENT_OFFSET_CRITTER];
+                Entity* targetEnt = &Entity::data[ENT_OFFSET_CRITTER];
                 for(; critter != critterEnd; ++critter, ++targetEnt) {
                     if((targetEnt->controlFlags & ENT_CTRL_FLAG_BULLET_TARGET) != 0
-                    && entityCollide(ent, 1, targetEnt, 1)) {
-                        critterHurt(targetEnt, critter, damage);
-                        bulletRemove(ent, bullet);
+                    && ent->collide(1, targetEnt, 1)) {
+                        critter->hurt(targetEnt, damage);
+                        bullet->remove(ent);
                         break;
                     }
                 }
@@ -76,17 +65,28 @@ void bulletUpdateAll() {
 
             frogboy::readRom<BulletHandler>(&bulletUpdateHandler[bullet->type])(ent, bullet);
 
-            if(!gameCheckOnScreen(ent->x / 16 + 8, ent->y / 16 + 8, 16, 16)) {
-                bulletRemove(ent, bullet);
+            if(!camera.containsPoint(ent->x / 16 + 8, ent->y / 16 + 8, 16, 16)) {
+                bullet->remove(ent);
             }
         }
     }
 }
 
-void bulletDrawAll() {
+void Bullet::drawAll() {
     for(uint8_t bulletIndex = 0; bulletIndex != ENT_COUNT_BULLET; ++bulletIndex) {
-        entityDraw(&ents[ENT_OFFSET_BULLET + bulletIndex]);
+        Entity::data[ENT_OFFSET_BULLET + bulletIndex].draw();
     }
+}
+
+void Bullet::remove(Entity* ent) {
+    if((flags & BULLET_FLAG_PLAYER_BULLET) != 0) {
+        if(player.instance.shotCount > 0) {
+            player.instance.shotCount--;
+        }
+    }
+
+    type = 0;
+    ent->remove();
 }
 
 void fireballInit(Entity* ent, Bullet* bullet) {
@@ -109,11 +109,11 @@ void fireballUpdate(Entity* ent, Bullet* bullet) {
     if(hitObs) {
         int16_t x = ent->x + (bullet->dir ? 64 : -64);
         int16_t y = ent->y;
-        bulletRemove(ent, bullet);
+        bullet->remove(ent);
 
         if(hitObs) {
             frogboy::playTone(150, 10);
-            bulletAdd(x, y, false, BULLET_TYPE_EXPLOSION);
+            Bullet::add(x, y, false, BULLET_TYPE_EXPLOSION);
         }
         return;
     }
@@ -127,7 +127,7 @@ void explosionInit(Entity* ent, Bullet* bullet) {
 
 void explosionUpdate(Entity* ent, Bullet* bullet) {
     if(bullet->timer >= 8) {
-        bulletRemove(ent, bullet);
+        bullet->remove(ent);
     } else if(bullet->timer >= 2) {
         ent->drawFlags |= ENT_DRAW_FLAG_FLASH;
     }

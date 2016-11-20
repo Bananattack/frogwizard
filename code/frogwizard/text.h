@@ -11,9 +11,11 @@ enum TextType {
     TEXT_TYPE_COUNT,
 };
 
-uint8_t textLength(TextType text);
-void textPrint(int16_t x, int16_t y, TextType text, uint8_t color);
-void textPrintCenter(int16_t x, int16_t y, TextType text, uint8_t color);
-void textPrintRight(int16_t x, int16_t y, TextType text, uint8_t color);
+namespace text {
+    uint8_t length(TextType text);
+    void print(int16_t x, int16_t y, TextType text, uint8_t color);
+    void printCenter(int16_t x, int16_t y, TextType text, uint8_t color);
+    void printRight(int16_t x, int16_t y, TextType text, uint8_t color);
+}
 
 #endif

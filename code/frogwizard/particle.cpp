@@ -2,19 +2,22 @@
 #include <string.h>
 #include "frogboy.h"
 #include "particle.h"
-#include "map.h"
+#include "camera.h"
 #include "sprites_bitmap.h"
 
-Particle particles[PARTICLE_COUNT];
-uint8_t particleSpawnIndex;
+namespace {
+    uint8_t particleSpawnIndex;
+}
 
-void particleInitSystem() {
-    memset(particles, 0, sizeof(particles));
+Particle Particle::data[PARTICLE_COUNT];
+
+void Particle::initSystem() {
+    memset(data, 0, sizeof(data));
     particleSpawnIndex = 0;
 }
 
-void particleAdd(int16_t x, int16_t y, int8_t xspd, int8_t yspd, uint8_t tile, uint8_t time) {
-    Particle* particle = &particles[particleSpawnIndex];
+void Particle::add(int16_t x, int16_t y, int8_t xspd, int8_t yspd, uint8_t tile, uint8_t time) {
+    Particle* particle = &data[particleSpawnIndex];
     particle->x = x;
     particle->y = y;
     particle->xspd = xspd;
@@ -28,13 +31,13 @@ void particleAdd(int16_t x, int16_t y, int8_t xspd, int8_t yspd, uint8_t tile, u
     }
 }
 
-void particleStarAdd(int16_t x, int16_t y) {
+void Particle::addStar(int16_t x, int16_t y) {
     int8_t xspd = (frogboy::getRandom(0, 1) == 0 ? -1 : 1) * frogboy::getRandom(4, 8);
-    particleAdd(x - 4 * 16, y - 4 * 16, xspd, -12, 0x42, 18);
+    Particle::add(x - 4 * 16, y - 4 * 16, xspd, -12, 0x42, 18);
 }
 
-void particleUpdateAll() {
-    Particle* particle = &particles[0];
+void Particle::updateAll() {
+    Particle* particle = &data[0];
     Particle* particleEnd = particle + PARTICLE_COUNT;
     for(; particle != particleEnd; ++particle) {
         if(particle->time > 0) {
@@ -45,12 +48,12 @@ void particleUpdateAll() {
     }
 }
 
-void particleDrawAll() {
-    Particle* particle = &particles[0];
+void Particle::drawAll() {
+    Particle* particle = &data[0];
     Particle* particleEnd = particle + PARTICLE_COUNT;
     for(; particle != particleEnd; ++particle) {
         if(particle->time > 0) {
-            frogboy::drawTile(particle->x / 16 - mapCameraX, particle->y / 16 - mapCameraY, spritesBitmap, particle->tile, 1, false, false);
+            frogboy::drawTile(particle->x / 16 - camera.x, particle->y / 16 - camera.y, spritesBitmap, particle->tile, 1, false, false);
         }
     }
 }

@@ -12,9 +12,9 @@ struct PlayerStatus {
     bool usedDoor;
 };
 
-struct Player {
+struct PlayerInstance {
     uint8_t frame;
-    uint8_t timer;
+    uint8_t moveTimer;
     uint8_t shootTimer;
     uint8_t jumpTimer;
     uint8_t hurtTimer;
@@ -28,14 +28,19 @@ struct Player {
     bool pushing;
 };
 
-extern PlayerStatus playerStatus;
-extern Player player;
+struct Player {
+    PlayerStatus status;
+    PlayerInstance instance;
 
-void playerInitSystem();
-void playerAdd(int16_t x, int16_t y);
-void playerUpdate();
-void playerHurt();
-void playerDraw();
-void playerDrawHUD();
+    static void initSystem();
+    static void add(int16_t x, int16_t y);
+
+    void update();
+    void hurt();
+    void draw();
+    void drawHUD();
+};
+
+extern Player player;
 
 #endif

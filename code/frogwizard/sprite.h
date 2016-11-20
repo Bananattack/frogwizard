@@ -23,5 +23,7 @@ enum SpriteFlags {
     SPRITE_FLAG_VFLIP = 1 << 7,
 };
 
-void spriteDraw(int16_t x, int16_t y, SpriteType frame, uint8_t flags);
+namespace sprite {
+    void draw(int16_t x, int16_t y, SpriteType frame, uint8_t flags);
+}
 #endif

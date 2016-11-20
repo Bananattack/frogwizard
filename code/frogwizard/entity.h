@@ -71,16 +71,20 @@ struct Entity {
     uint8_t sprite;
     uint8_t hitbox;
     uint8_t collisionCategory;
+
+    static Entity data[ENT_COUNT];
+
+    static void initSystem();
+    static Entity* add(int16_t x, int16_t y, uint8_t offset, uint8_t count);
+
+    void remove();
+    bool getEntPixelObs(int16_t x, int16_t y);
+    bool getAnyPixelObs(int16_t x, int16_t y);
+    bool detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignoreEnts);
+    bool detectFloor();
+    void update();
+    void draw();
+    bool collide(int8_t thisBorder, Entity* other, int8_t otherBorder);
 };
-
-extern Entity ents[ENT_COUNT];
-
-void entityInitSystem();
-Entity* entityAdd(int16_t x, int16_t y, uint8_t offset, uint8_t count);
-void entityRemove(Entity* ent);
-bool entityDetectFloor(Entity* ent);
-void entityUpdate(Entity* ent);
-void entityDraw(Entity* ent);
-bool entityCollide(Entity* ent, int8_t borderA, Entity* entB, int8_t borderB);
 
 #endif

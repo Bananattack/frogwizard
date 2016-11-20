@@ -9,6 +9,9 @@
 #include "sprite.h"
 #include "sprites_bitmap.h"
 #include "map.h"
+#include "camera.h"
+#include "door.h"
+#include "spawn.h"
 #include "text.h"
 
 bool pausePressed;
@@ -18,16 +21,6 @@ GameMode gameMode;
 uint8_t wipeProgress;
 const uint8_t wipeMasks[] FROGBOY_ROM_DATA = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x11, 0x51, 0x55, 0xD5, 0xDD, 0xDF, 0xFF};
 
-const uint8_t doorData[DOOR_TYPE_COUNT * 3] FROGBOY_ROM_DATA = {
-    2, 2, MAP_TYPE_GRASSLAND,
-    2, 2, MAP_TYPE_HOUSE,
-    10, 1, MAP_TYPE_GRASSLAND,
-    5, 2, MAP_TYPE_HOUSE2,
-    40, 1, MAP_TYPE_GRASSLAND,
-    2, 2, MAP_TYPE_HOUSE3,
-    67, 2, MAP_TYPE_GRASSLAND,
-};
-
 typedef void (*GameModeHandler)();
 extern const GameModeHandler gameModeUpdateHandlers[] FROGBOY_ROM_DATA;
 extern const GameModeHandler gameModeDrawHandlers[] FROGBOY_ROM_DATA;
@@ -35,7 +28,6 @@ extern const GameModeHandler gameModeDrawHandlers[] FROGBOY_ROM_DATA;
 void gameInit() {
     gameMode = GAME_MODE_TITLE;
     resetPressed = pausePressed = true;
-    //frogboy::playMusic(musicScore);
 }
 
 void gameDraw() {
@@ -57,63 +49,22 @@ void gameUpdate() {
     frogboy::readRom<GameModeHandler>(&gameModeUpdateHandlers[gameMode])();
 }
 
-enum {
-    CAMERA_BORDER = 6,
-    CAMERA_MAX_SPEED = 4,
-};
- 
-bool gameCheckOnScreen(int16_t x, int16_t y, uint8_t borderX, uint8_t borderY) {
-    static_cast<void>(y);
-    static_cast<void>(borderY);
-    return x - mapCameraX < frogboy::SCREEN_WIDTH + borderX
-        && x - mapCameraX > -borderX;
-        //&& y - mapCameraY < frogboy::SCREEN_HEIGHT + borderY
-        //&& y - mapCameraY > -borderY;
-}
-
-void gameUpdateCamera() {
-    int16_t playerX = ents[ENT_OFFSET_PLAYER].x / 16 + 8;
-    if(playerX < mapCameraX + frogboy::SCREEN_WIDTH / 2 - CAMERA_BORDER) {
-        int16_t distance = mapCameraX + frogboy::SCREEN_WIDTH / 2 - CAMERA_BORDER - playerX;
-        if(distance > CAMERA_MAX_SPEED) {
-            distance = CAMERA_MAX_SPEED;
-        }
-        mapCameraX -= distance;
-    }
-    if(playerX > mapCameraX + frogboy::SCREEN_WIDTH / 2 + CAMERA_BORDER) {
-        int16_t distance = playerX - (mapCameraX + frogboy::SCREEN_WIDTH / 2 + CAMERA_BORDER);
-        if(distance > CAMERA_MAX_SPEED) {
-            distance = CAMERA_MAX_SPEED;
-        }
-        mapCameraX += distance;
-    }
-	
-    if(mapCameraX <= 0) {
-        mapCameraX = 0;
-    }
-    if(mapCameraX >= mapGetWidth() * 16 - frogboy::SCREEN_WIDTH) {
-        mapCameraX = mapGetWidth() * 16 - frogboy::SCREEN_WIDTH;
-    }
-}
-
 void gameEnterDoor(DoorType door) {
-    const uint8_t* doorPtr = &doorData[door * 3];
-
-    entityInitSystem();
-    critterInitSystem();
-    bulletInitSystem();
-    particleInitSystem();
+    Entity::initSystem();
+    Critter::initSystem();
+    Bullet::initSystem();
+    Particle::initSystem();
+    spawn::init();
     
-    int16_t x = frogboy::readRom<uint8_t>(doorPtr++) * 256;
-    int16_t y = frogboy::readRom<uint8_t>(doorPtr++) * 256;
-    mapCurrentIndex = frogboy::readRom<uint8_t>(doorPtr++);
-    playerAdd(x, y);
+    int16_t x = 0;
+    int16_t y = 0;
+    door::read(door, x, y, map.currentIndex);
+    player.add(x, y);
 
     wipeProgress = 0;
 
-    mapCameraX = ents[ENT_OFFSET_PLAYER].x / 16 + 8 - frogboy::SCREEN_WIDTH / 2;
-    gameUpdateCamera();
-    critterUpdateAll();
+    camera.reset(camera.x = Entity::data[ENT_OFFSET_PLAYER].x / 16 + 8 - frogboy::SCREEN_WIDTH / 2, 0, map.getWidth(), map.getHeight());
+    Critter::updateAll();
 }
 
 void gameCheckPauseToggle(GameMode nextMode) {
@@ -129,31 +80,31 @@ void gameCheckPauseToggle(GameMode nextMode) {
 }
 
 void gameModeTitleDraw() {
-    textPrintCenter(64, 8, TEXT_TYPE_TITLE, 1);
-    textPrintRight(128, 24, TEXT_TYPE_PRESS_START, 1);
-    spriteDraw(8, 20, player.timer % 32 < 16 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2, SPRITE_FLAG_HFLIP);
-    textPrintCenter(64, 48, TEXT_TYPE_AUTHOR, 1);
+    text::printCenter(64, 8, TEXT_TYPE_TITLE, 1);
+    text::printRight(128, 24, TEXT_TYPE_PRESS_START, 1);
+    sprite::draw(8, 20, player.instance.moveTimer % 32 < 16 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2, SPRITE_FLAG_HFLIP);
+    text::printCenter(64, 48, TEXT_TYPE_AUTHOR, 1);
 }
 
 void gameModeTitleUpdate() {
-    player.timer++;
+    player.instance.moveTimer++;
     if(!resetPressed && frogboy::anyPressed(frogboy::BUTTON_MASK_PAUSE | frogboy::BUTTON_MASK_JUMP | frogboy::BUTTON_MASK_SHOOT)) {
         gameMode = GAME_MODE_ACTIVE;
 
-        playerInitSystem();
-        mapInitSystem();
+        player.initSystem();
+        Map::initSystem();
         gameEnterDoor(DOOR_TYPE_START);
-        player.shootPressed = player.jumpPressed = true;
-        playerUpdate();
+        player.instance.shootPressed = player.instance.jumpPressed = true;
+        player.update();
     }
 }
 
 void gameModeActiveDraw() {
-    mapDraw();
-    critterDrawAll();
-    playerDraw(); 
-    bulletDrawAll();   
-    particleDrawAll();
+    map.draw(camera);
+    Critter::drawAll();
+    player.draw(); 
+    Bullet::drawAll();   
+    Particle::drawAll();
 
     uint8_t mask = frogboy::readRom<uint8_t>(&wipeMasks[wipeProgress >> 2]);
     uint8_t* buffer = frogboy::getScreenBuffer();
@@ -162,7 +113,7 @@ void gameModeActiveDraw() {
         buffer++;
     }
 
-    playerDrawHUD();
+    player.drawHUD();
 }
 
 void gameModeActiveUpdate() {
@@ -170,30 +121,31 @@ void gameModeActiveUpdate() {
 
     if(wipeProgress < 48) {
         wipeProgress++;
-        if(wipeProgress == 20 && playerStatus.usedDoor) {
+        if(wipeProgress == 20 && player.status.usedDoor) {
             frogboy::playTone(300, 4);
         }
     }
     if(wipeProgress >= 36) {
-        particleUpdateAll();
-        critterUpdateAll();
-        bulletUpdateAll();
-        playerUpdate();
-        gameUpdateCamera();
+        spawn::check();
+        Particle::updateAll();
+        Critter::updateAll();
+        Bullet::updateAll();
+        player.update();
+        camera.update(Entity::data[ENT_OFFSET_PLAYER].x / 16 + 8, 0, map.getWidth(), map.getHeight());
     }
 
-    if(playerStatus.nextMap != 0xFF) {
-        gameEnterDoor(static_cast<DoorType>(playerStatus.nextMap));
-        playerStatus.nextMap = 0xFF;
+    if(player.status.nextMap != 0xFF) {
+        gameEnterDoor(static_cast<DoorType>(player.status.nextMap));
+        player.status.nextMap = 0xFF;
     }
 }
 
 void gameModePauseDraw() {
     gameModeActiveDraw();
-    for(uint8_t i = 0; i != textLength(TEXT_TYPE_PAUSED) + 1; ++i) {
+    for(uint8_t i = 0; i != text::length(TEXT_TYPE_PAUSED) + 1; ++i) {
         frogboy::drawTile(32 + i * 8, 24, spritesBitmap, 0x4A, 0, false, false);
     }
-    textPrintCenter(64, 24, TEXT_TYPE_PAUSED, 1);
+    text::printCenter(64, 24, TEXT_TYPE_PAUSED, 1);
 }
 
 void gameModePauseUpdate() {

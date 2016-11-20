@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define FROGBOY_APPNAME "frog wizard"
+#define FROGBOY_APPNAME "Frog Egg"
 
 namespace frogboy {
     enum {

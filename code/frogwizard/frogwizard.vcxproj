@@ -144,7 +144,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="bullet.cpp" />
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="critter.cpp" />
+    <ClCompile Include="door.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="frogboy.cpp" />
     <ClCompile Include="frogboy_sdl.cpp" />
@@ -154,13 +156,16 @@
     <ClCompile Include="map.cpp" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="spawn.cpp" />
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="sprites_bitmap.cpp" />
     <ClCompile Include="text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bullet.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="critter.h" />
+    <ClInclude Include="door.h" />
     <ClInclude Include="entity.h" />
     <ClInclude Include="frogboy.h" />
     <ClInclude Include="frogwizard_rc_resource.h" />
@@ -169,6 +174,7 @@
     <ClInclude Include="map.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="spawn.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprites_bitmap.h" />
     <ClInclude Include="text.h" />

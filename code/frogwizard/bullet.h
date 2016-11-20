@@ -18,12 +18,14 @@ struct Bullet {
     uint8_t flags;
     uint8_t timer;
     bool dir;
-};
 
-void bulletInitSystem();
-Bullet* bulletAdd(int16_t x, int16_t y, bool dir, BulletType type);
-void bulletRemove(Entity* entity, Bullet* bullet);
-void bulletUpdateAll();
-void bulletDrawAll();
+    static Bullet data[ENT_COUNT_BULLET];
+
+    static void initSystem();
+    static Bullet* add(int16_t x, int16_t y, bool dir, BulletType type);
+    static void updateAll();
+    static void drawAll();
+    void remove(Entity* entity);
+};
 
 #endif

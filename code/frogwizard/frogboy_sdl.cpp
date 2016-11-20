@@ -234,12 +234,15 @@ namespace frogboy {
                     case SDL_QUIT:
                         windowOpen = false;
                         break;
-                    case SDL_KEYDOWN:
+                    case SDL_KEYDOWN: {
+                        SDL_Keycode sym = e.key.keysym.sym;
+                        uint16_t mod = e.key.keysym.mod & (KMOD_CTRL | KMOD_ALT);
+
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
                             const auto& keycode = keycodes[i];
-                            if(((keycode.mod == 0 && e.key.keysym.mod == 0)
-                                || (e.key.keysym.mod & keycode.mod) != 0)
-                            && e.key.keysym.sym == keycode.code) {
+                            if(((keycode.mod == 0 && mod == 0)
+                                || (mod & keycode.mod) != 0)
+                            && sym == keycode.code) {
                                 pressed[i] = true;
                                 break;
                             }
@@ -258,17 +261,22 @@ namespace frogboy {
                             }
                         }
                         break;
-                    case SDL_KEYUP:
+                    }
+                    case SDL_KEYUP: {
+                        SDL_Keycode sym = e.key.keysym.sym;
+                        uint16_t mod = e.key.keysym.mod & (KMOD_CTRL | KMOD_ALT);
+
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
                             const auto& keycode = keycodes[i];
-                            if(((keycode.mod == 0 && e.key.keysym.mod == 0)
-                                || (e.key.keysym.mod & keycode.mod) != 0)
-                            && e.key.keysym.sym == keycode.code) {
+                            if(((keycode.mod == 0 && mod == 0)
+                                || (mod & keycode.mod) != 0)
+                            && sym == keycode.code) {
                                 pressed[i] = false;
                                 break;
                             }
                         }
                         break;
+                    }
                     case SDL_WINDOWEVENT:
                         switch(e.window.event) {
                             case SDL_WINDOWEVENT_RESIZED: {
