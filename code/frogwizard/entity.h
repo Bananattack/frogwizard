@@ -78,13 +78,13 @@ struct Entity {
     static Entity* add(int16_t x, int16_t y, uint8_t offset, uint8_t count);
 
     void remove();
-    bool getEntPixelObs(int16_t x, int16_t y);
-    bool getAnyPixelObs(int16_t x, int16_t y);
-    bool detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignoreEnts);
-    bool detectFloor();
+    bool getEntPixelObs(int16_t x, int16_t y) const;
+    bool getAnyPixelObs(int16_t x, int16_t y) const;
+    bool detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignoreEnts) const;
+    bool detectFloor() const;
     void update();
-    void draw();
-    bool collide(int8_t thisBorder, Entity* other, int8_t otherBorder);
+    void draw() const;
+    bool collide(int8_t thisBorder, const Entity* other, int8_t otherBorder) const;
 };
 
 #endif

@@ -10,7 +10,7 @@ namespace {
 
 Camera camera;
 
-bool Camera::containsPoint(int16_t x, int16_t y, uint8_t borderX, uint8_t borderY) {
+bool Camera::containsPoint(int16_t x, int16_t y, uint8_t borderX, uint8_t borderY) const {
     static_cast<void>(y);
     static_cast<void>(borderY);
     return x - this->x < frogboy::SCREEN_WIDTH + borderX

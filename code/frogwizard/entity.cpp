@@ -52,9 +52,9 @@ void Entity::remove() {
     controlFlags = 0;
 }
 
-bool Entity::getEntPixelObs(int16_t x, int16_t y) {
-    Entity* wallEnt = &data[ENT_OFFSET_CRITTER];
-    Entity* wallEntEnd = wallEnt + ENT_COUNT_CRITTER;
+bool Entity::getEntPixelObs(int16_t x, int16_t y) const {
+    const Entity* wallEnt = &data[ENT_OFFSET_CRITTER];
+    const Entity* wallEntEnd = wallEnt + ENT_COUNT_CRITTER;
     uint8_t collidesWith = frogboy::readRom(&collisionCategoryCollidesWith[collisionCategory]);
     for(; wallEnt != wallEntEnd; ++wallEnt) {
         if(wallEnt != this
@@ -68,11 +68,11 @@ bool Entity::getEntPixelObs(int16_t x, int16_t y) {
     return false;
 }
 
-bool Entity::getAnyPixelObs(int16_t x, int16_t y) {    
+bool Entity::getAnyPixelObs(int16_t x, int16_t y) const {    
     return getEntPixelObs(x, y) || map.getPixelObs(x, y);
 }
 
-bool Entity::detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignoreEnts) {
+bool Entity::detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignoreEnts) const {
     int16_t checkPixelX = x / 16 + hx;
     int16_t checkPixelY = y / 16 + hy;
 
@@ -87,7 +87,7 @@ bool Entity::detectFloor(int8_t hx, int8_t hy, int8_t hw, int8_t hh, bool ignore
     }
 }
 
-bool Entity::detectFloor() {
+bool Entity::detectFloor() const {
     int8_t hx, hy, hw, hh;
     hitbox::read(static_cast<HitboxType>(hitbox), hx, hy, hw, hh);
     return detectFloor(hx, hy, hw, hh, false);
@@ -169,7 +169,7 @@ void Entity::update() {
     }
 }
 
-void Entity::draw() {
+void Entity::draw() const {
     uint8_t entityFlags = drawFlags;
     if((controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
     && (entityFlags & ENT_DRAW_FLAG_HIDDEN) == 0) {
@@ -196,7 +196,7 @@ void Entity::draw() {
     }
 }
 
-bool Entity::collide(int8_t thisBorder, Entity* other, int8_t otherBorder) {
+bool Entity::collide(int8_t thisBorder, const Entity* other, int8_t otherBorder) const {
     if((controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
     && (other->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0) {
         return hitbox::collide(x / 16, y / 16, static_cast<HitboxType>(hitbox), thisBorder, other->x / 16, other->y / 16, static_cast<HitboxType>(other->hitbox), otherBorder);
