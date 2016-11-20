@@ -110,6 +110,10 @@ namespace frogboy {
 
     template<> int8_t readRom(const int8_t* ptr) {
         return static_cast<int8_t>(pgm_read_byte(ptr));
+    }
+
+    template<> bool readRom(const bool* ptr) {
+        return static_cast<bool>(pgm_read_byte(ptr));
     }    
 }
 #endif

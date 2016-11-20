@@ -168,7 +168,6 @@
     <ClInclude Include="map.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="player.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprites_bitmap.h" />
   </ItemGroup>

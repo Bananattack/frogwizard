@@ -17,9 +17,9 @@ enum SpriteType {
 };
 
 enum SpriteFlags {
-    SPRITE_FLAG_COLOR_INVERT = 0x01,
-    SPRITE_FLAG_HFLIP = 0x40,
-    SPRITE_FLAG_VFLIP = 0x80,
+    SPRITE_FLAG_COLOR_INVERT = 1 << 0,
+    SPRITE_FLAG_HFLIP = 1 << 6,
+    SPRITE_FLAG_VFLIP = 1 << 7,
 };
 
 void spriteDraw(int16_t x, int16_t y, SpriteType frame, uint8_t flags);

@@ -84,4 +84,13 @@ namespace frogboy {
             }
         } while(c != 0);
     }
+
+    bool anyPressed(uint8_t buttonMask) {
+        for(uint8_t i = 0; i != BUTTON_COUNT; ++i) {
+            if((buttonMask & (1 << i)) != 0 && isPressed(static_cast<Button>(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

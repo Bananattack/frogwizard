@@ -11,17 +11,20 @@
 #include "game.h"
 
 enum {
-    CRITTER_SPAWN_MAX = 255,
-    CRITTER_SPAWN_ARRAY_SIZE = (CRITTER_SPAWN_MAX + 7) / 8,
+    CRITTER_SPAWN_MAX = 64,
+    CRITTER_SPAWN_BIT_ARRAY_SIZE = (CRITTER_SPAWN_MAX + 7) / 8,
 };
 
 Critter critters[ENT_COUNT_CRITTER];
-uint8_t critterSpawnUsed[CRITTER_SPAWN_ARRAY_SIZE];
-uint8_t critterSpawnKilled[CRITTER_SPAWN_ARRAY_SIZE];
+uint8_t critterSpawnUsed[CRITTER_SPAWN_BIT_ARRAY_SIZE];
+uint8_t critterSpawnKilled[CRITTER_SPAWN_BIT_ARRAY_SIZE];
+int16_t critterSpawnHibernateX[CRITTER_SPAWN_MAX];
+int16_t critterSpawnHibernateY[CRITTER_SPAWN_MAX];
 
 typedef void (*CritterHandler)(Entity* ent, Critter* critter);
 extern const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
+extern const bool critterCanHibernate[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 extern const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
 
@@ -32,6 +35,10 @@ void critterInitSystem() {
     memset(critters, 0, sizeof(critters));
     memset(critterSpawnUsed, 0, sizeof(critterSpawnUsed));
     memset(critterSpawnKilled, 0, sizeof(critterSpawnKilled));
+    memset(critterSpawnKilled, 0, sizeof(critterSpawnKilled));
+    for(uint8_t i = 0; i != CRITTER_SPAWN_MAX; ++i) {
+        critterSpawnHibernateX[i] = critterSpawnHibernateY[i] = 0x7FFF;
+    }
 }
 
 Critter* critterAdd(int16_t x, int16_t y, CritterType type, uint8_t data) {
@@ -61,6 +68,8 @@ void critterRemove(Entity* ent, Critter* critter) {
         uint8_t mask = 1 << (spawnIndex % 8);
         critterSpawnUsed[spawnIndex / 8] &= ~mask;
         critterSpawnKilled[spawnIndex / 8] |= mask;
+        critterSpawnHibernateX[spawnIndex] = ent->x / 16;
+        critterSpawnHibernateY[spawnIndex] = ent->y / 16;
     }
 
     entityRemove(ent);
@@ -92,6 +101,12 @@ static void updateSpawnPoints() {
         uint8_t type = frogboy::readRom<uint8_t>(spawnPtr++);
         uint8_t data = frogboy::readRom<uint8_t>(spawnPtr++);
         uint8_t mask = 1 << (i % 8);
+
+        if(frogboy::readRom<bool>(&critterCanHibernate[type])
+        && critterSpawnHibernateX[i] != 0x7FFF) {
+            x = critterSpawnHibernateX[i];
+            y = critterSpawnHibernateY[i];
+        }
 
         if(gameCheckOnScreen(x + 8, y + 8, 64, 16)) {
             if((critterSpawnUsed[i / 8] & mask) == 0
@@ -232,6 +247,16 @@ void doorUpdate(Entity* ent, Critter* critter) {
     }
 }
 
+enum {
+    BLOCK_DETECTION_X_RANGE = 4,
+    BLOCK_DETECTION_SLOPE_Y_RANGE = 4,
+    BLOCK_FRICTION_MULTIPLIER = 31,
+    BLOCK_FRICTION_DIVISOR = 32,
+    BLOCK_INERTIA_DURATION = 12,
+    BLOCK_FALL_YACCEL = 2,
+    BLOCK_FALL_MAX_YSPEED = 32,
+};
+
 void blockInit(Entity* ent, Critter* critter) {
     static_cast<void>(critter);
     ent->hitbox = HITBOX_TYPE_BLOCK;
@@ -240,16 +265,26 @@ void blockInit(Entity* ent, Critter* critter) {
 }
 
 static bool blockCheckPushed(Entity* ent, Entity* playerEnt) {
-    return (playerEnt->xspd < 0 || playerEnt->xspd > 0)
-        && (frogboy::isPressed(frogboy::BUTTON_LEFT) || frogboy::isPressed(frogboy::BUTTON_RIGHT))
-        && hitboxCollide(ent->x / 16,
+    if((playerEnt->xspd < 0 || playerEnt->xspd > 0)
+    && (frogboy::isPressed(frogboy::BUTTON_LEFT) || frogboy::isPressed(frogboy::BUTTON_RIGHT))) {
+        int16_t x = (playerEnt->x + playerEnt->xspd * BLOCK_DETECTION_X_RANGE) / 16;
+        int16_t y = playerEnt->y / 16;
+        if((ent->status & ENT_STATUS_DOWNHILL) != 0) {
+            y += BLOCK_DETECTION_SLOPE_Y_RANGE;
+        } else if((ent->status & ENT_STATUS_UPHILL) != 0) {
+            y -= BLOCK_DETECTION_SLOPE_Y_RANGE;
+        }
+
+        return hitboxCollide(ent->x / 16,
             ent->y / 16,
             (HitboxType) ent->hitbox,
             0,
-            (playerEnt->x + playerEnt->xspd * 4) / 16,
-            playerEnt->y / 16 + ((ent->status & ENT_STATUS_DOWNHILL) != 0 ? 4 : 0),
+            x,
+            y,
             (HitboxType) HITBOX_TYPE_PUSH_DETECTION,
             0);
+    }
+    return false;
 }
 
 void blockUpdate(Entity* ent, Critter* critter) {
@@ -257,23 +292,28 @@ void blockUpdate(Entity* ent, Critter* critter) {
 
     if(blockCheckPushed(ent, playerEnt)) {
         player.pushing = true;
-        if(critter->var[0] >= 16) {
+        if(critter->var[0] >= BLOCK_INERTIA_DURATION) {
             ent->xspd = playerEnt->xspd;
         } else {
             critter->var[0]++;
         }
     } else {        
-        ent->xspd = ent->xspd * 31 / 32;
+        ent->xspd = ent->xspd * BLOCK_FRICTION_MULTIPLIER / BLOCK_FRICTION_DIVISOR;
         critter->var[0] = 0;
     }
 
     if(!entityDetectFloor(ent)) {
-        ent->yspd += 2;
-        if(ent->yspd > 32) {
-            ent->yspd = 32;
+        ent->yspd += BLOCK_FALL_YACCEL;
+        if(ent->yspd > BLOCK_FALL_MAX_YSPEED) {
+            ent->yspd = BLOCK_FALL_MAX_YSPEED;
         }
     } else {
-        ent->yspd = 0;
+        if(ent->yspd != 0) {
+            if(ent->yspd >= BLOCK_FALL_MAX_YSPEED / 6) {
+                frogboy::playTone(150, 16);
+            }
+            ent->yspd = 0;
+        }
     }
 }
 
@@ -289,6 +329,13 @@ const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     1,
     0,
     1,
+};
+
+const bool critterCanHibernate[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
+    false,
+    false,
+    false,
+    true,
 };
 
 const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {

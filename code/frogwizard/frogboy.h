@@ -24,25 +24,15 @@ namespace frogboy {
         BUTTON_COUNT,
     };
 
-    enum MusicOpcode {
-        // Wait: wait for the specified number of milliseconds
-        // duration = ((cmd << 8) | next), cmd in {0x00 .. 0x7F}, next in {0x00 .. 0xFF}
-        MUSIC_OPCODE_WAIT = 0x00,
-
-        // Stop note: stop any playing note on the specified channel.
-        // channel = (cmd & 0xF)
-        MUSIC_OPCODE_STOP_NOTE = 0x80,
-
-        // Play note: play a new note on the specified channel.
-        // channel = (cmd & 0xF)
-        // note = next, next in {0x00 .. 0x7F}
-        MUSIC_OPCODE_PLAY_NOTE = 0x90,
-
-        // Restart: Sends the music player back to the begining of the sequence.
-        MUSIC_OPCODE_RESTART = 0xE0,
-
-        // Stop: Stops the music sequence.
-        MUSIC_OPCODE_STOP = 0xF0,
+    enum ButtonMask {
+        BUTTON_MASK_LEFT = 1 << BUTTON_LEFT,
+        BUTTON_MASK_RIGHT = 1 << BUTTON_RIGHT,
+        BUTTON_MASK_UP = 1 << BUTTON_UP,
+        BUTTON_MASK_DOWN = 1 << BUTTON_DOWN,
+        BUTTON_MASK_SHOOT = 1 << BUTTON_SHOOT,
+        BUTTON_MASK_JUMP = 1 << BUTTON_JUMP,
+        BUTTON_MASK_PAUSE = 1 << BUTTON_PAUSE,
+        BUTTON_MASK_RESET = 1 << BUTTON_RESET,
     };
 
     bool init();
@@ -57,10 +47,8 @@ namespace frogboy {
     void printRamString(int16_t x, int16_t y, const uint8_t* bitmap, const char* message, uint8_t color);
     void printRomString(int16_t x, int16_t y, const uint8_t* bitmap, const char* message, uint8_t color);
     void playTone(uint16_t frequency, uint32_t duration);
-    void playMusic(const uint8_t* data);
-    void stopMusic();
-    bool isMusicPlaying();
     bool isPressed(Button code);
+    bool anyPressed(uint8_t buttonMask);
     int getRandom(int min, int max);
 
     template<typename T> T readRom(const T* ptr);
@@ -78,6 +66,7 @@ namespace frogboy {
         template<> char readRom(const char* ptr);
         template<> uint8_t readRom(const uint8_t* ptr);
         template<> int8_t readRom(const int8_t* ptr);
+        template<> bool readRom(const bool* ptr);
     }
 #else
     #define FROGBOY_ROM_DATA

@@ -17,7 +17,7 @@ enum {
     PLAYER_PUSH_MAX_XSPEED = 16,
 
     PLAYER_FRICTION_MULTIPLIER = 14,
-    PLAYER_FRICTION_DIVIDER = 16,
+    PLAYER_FRICTION_DIVISOR = 16,
 
     PLAYER_JUMP_MIN_DURATION = 4,
     PLAYER_JUMP_MAX_DURATION = 9,
@@ -113,7 +113,7 @@ void playerUpdate() {
         playerStatus.dir = true;
         moved = true;
     } else {
-        ent->xspd = ent->xspd * PLAYER_FRICTION_MULTIPLIER / PLAYER_FRICTION_DIVIDER;
+        ent->xspd = ent->xspd * PLAYER_FRICTION_MULTIPLIER / PLAYER_FRICTION_DIVISOR;
     }
 
     if(player.shootTimer > 0) {
@@ -191,7 +191,7 @@ void playerUpdate() {
                 player.landed = true;
                 ent->yspd = 0;
 
-                if(player.fallTimer > 14) {                    
+                if(player.fallTimer > 4) {                    
                     particleStarAdd(ent->x + 10 * 16, ent->y + 4 * 16);
                     frogboy::playTone(200, 10);
                 }

@@ -1,6 +1,7 @@
 #ifdef FROGBOY_SDL
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 #include <time.h>
 #include <SDL.h>
 
@@ -11,6 +12,10 @@ namespace {
         FRAME_INTERVAL = 16,
         SCREEN_SCALE = 8,
         DESKTOP_FIT_BORDER = 64,
+
+        AUDIO_CHANNEL_COUNT = 2,
+        AUDIO_FREQUENCY = 48000,
+        AUDIO_AMPLITUDE = 15000,
     };
 
     SDL_Window* window = nullptr;
@@ -29,20 +34,52 @@ namespace {
 
     bool pressed[static_cast<size_t>(frogboy::BUTTON_COUNT)];
 
-    const SDL_Keycode keycodes[static_cast<size_t>(frogboy::BUTTON_COUNT)] = {
-        SDLK_LEFT,
-        SDLK_RIGHT,
-        SDLK_UP,
-        SDLK_DOWN, 
-        SDLK_z,
-        SDLK_x,
-        SDLK_RETURN,
-        SDLK_r,
+    struct KeyCode {
+        SDL_Keycode code;
+        uint16_t mod;
     };
 
-    void audioCallback(void* userdata, uint8_t* rawBuffer, int len) {
-        int16_t* data = reinterpret_cast<int16_t*>(rawBuffer); 
-        static_cast<void>(data); // TODO: actually do an audio callback for SDL
+    const KeyCode keycodes[static_cast<size_t>(frogboy::BUTTON_COUNT)] = {
+        {SDLK_LEFT, 0},
+        {SDLK_RIGHT, 0},
+        {SDLK_UP, 0},
+        {SDLK_DOWN, 0},
+        {SDLK_z, 0},
+        {SDLK_x, 0},
+        {SDLK_RETURN, 0},
+        {SDLK_r, KMOD_CTRL},
+    };
+
+    SDL_AudioSpec audioSpecRequested;
+    SDL_AudioSpec audioSpecActual;
+    SDL_AudioDeviceID audioDevice;
+
+    uint8_t audioChannelNextIndex;
+
+    struct AudioChannel {
+        uint32_t sampleCount;
+        uint16_t frequency;
+        double phase;
+    };
+
+    AudioChannel audioChannels[AUDIO_CHANNEL_COUNT];
+
+    void audioCallback(void* userdata, uint8_t* rawBuffer, int rawBufferLength) {
+        int16_t* samples = reinterpret_cast<int16_t*>(rawBuffer);
+        int sampleCount = rawBufferLength / 2;
+
+        for(int sampleIndex = 0; sampleIndex != sampleCount; ++sampleIndex) {
+            int16_t sample = 0;
+            for(int channelIndex = 0; channelIndex != AUDIO_CHANNEL_COUNT; ++channelIndex) {
+                if(audioChannels[channelIndex].sampleCount > 0) {
+                    audioChannels[channelIndex].sampleCount--;
+                    sample += sin(static_cast<double>(audioChannels[channelIndex].phase) / static_cast<double>(AUDIO_FREQUENCY) * 2 * M_PI) < 0 ? -AUDIO_AMPLITUDE : AUDIO_AMPLITUDE;
+                    audioChannels[channelIndex].phase += audioChannels[channelIndex].frequency;
+                }
+            }
+
+            samples[sampleIndex] = sample;
+        }
     }
 }
 
@@ -50,7 +87,7 @@ namespace frogboy {
     bool init() {
         srand(static_cast<unsigned int>(time(nullptr)));
 
-        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0) {
+        if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0) {
             return false;
         }
 
@@ -95,6 +132,21 @@ namespace frogboy {
             return false;
         }
 
+        memset(&audioSpecRequested, 0, sizeof(audioSpecRequested));
+        audioSpecRequested.freq = AUDIO_FREQUENCY;
+        audioSpecRequested.format = AUDIO_S16;
+        audioSpecRequested.channels = 1;
+        audioSpecRequested.samples = 2048;
+        audioSpecRequested.callback = audioCallback;
+
+        memset(audioChannels, 0, sizeof(audioChannels));
+        audioChannelNextIndex = 0;
+
+        audioDevice = SDL_OpenAudioDevice(nullptr, 0, &audioSpecRequested, &audioSpecActual, 0);
+        if(audioDevice == 0) {
+            return false;
+        }
+
         clearScreen();
         lastFrame = SDL_GetTicks();
         lastMouseMove = lastFrame;
@@ -105,10 +157,15 @@ namespace frogboy {
 
         memset(pressed, 0, sizeof(pressed));
 
+        SDL_PauseAudioDevice(audioDevice, 0);
+
         return true;
     }
 
     void destroy() {
+        if(audioDevice > 0) {
+            SDL_CloseAudioDevice(audioDevice);
+        }
         if(screenTexture != nullptr) {
             SDL_DestroyTexture(screenTexture);
         }
@@ -179,8 +236,10 @@ namespace frogboy {
                         break;
                     case SDL_KEYDOWN:
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
-                            if((e.key.keysym.mod & KMOD_ALT) == 0
-                            && e.key.keysym.sym == keycodes[i]) {
+                            const auto& keycode = keycodes[i];
+                            if((keycode.mod == 0
+                                || (e.key.keysym.mod & keycode.mod) != 0)
+                            && e.key.keysym.sym == keycode.code) {
                                 pressed[i] = true;
                                 break;
                             }
@@ -201,7 +260,9 @@ namespace frogboy {
                         break;
                     case SDL_KEYUP:
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
-                            if(e.key.keysym.sym == keycodes[i]) {
+                            const auto& keycode = keycodes[i];
+                            if((keycode.mod == 0 || (e.key.keysym.mod & keycode.mod) != 0)
+                            && e.key.keysym.sym == keycode.code) {
                                 pressed[i] = false;
                                 break;
                             }
@@ -299,13 +360,18 @@ namespace frogboy {
         return screenBuffer;
     }
 
-    void playTone(uint16_t frequency, uint32_t duration) {}
-    void playMusic(const uint8_t* data) {}
-    void stopMusic() {}
-    bool isMusicPlaying() { return false; }
+    void playTone(uint16_t frequency, uint32_t duration) {
+        SDL_LockAudioDevice(audioDevice);
+        audioChannels[audioChannelNextIndex].frequency = frequency;
+        audioChannels[audioChannelNextIndex].sampleCount = duration * AUDIO_FREQUENCY / 1000;
+        audioChannels[audioChannelNextIndex].phase = 0;
+        SDL_UnlockAudioDevice(audioDevice);
+
+        audioChannelNextIndex = (audioChannelNextIndex + 1) % AUDIO_CHANNEL_COUNT;
+    }
 
     bool isPressed(Button button) {
-        return pressed[static_cast<size_t>(button)];
+        return pressed[button];
     }
 
     int getRandom(int min, int max) {
