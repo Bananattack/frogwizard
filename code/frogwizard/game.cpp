@@ -9,21 +9,11 @@
 #include "sprite.h"
 #include "sprites_bitmap.h"
 #include "map.h"
-
-enum GameMode {
-    GAME_MODE_TITLE,
-    GAME_MODE_ACTIVE,
-    GAME_MODE_PAUSE,
-};
+#include "text.h"
 
 bool pausePressed;
 bool resetPressed;
 GameMode gameMode;
-
-const char titleText[] FROGBOY_ROM_DATA = "F R O G  E G G";
-const char pressStartText[] FROGBOY_ROM_DATA = "PRESS START";
-const char authorText[] FROGBOY_ROM_DATA = "BY EGGBOYCOLOR";
-const char pauseText[] FROGBOY_ROM_DATA = "PAUSED";
 
 uint8_t wipeProgress;
 const uint8_t wipeMasks[] FROGBOY_ROM_DATA = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x11, 0x51, 0x55, 0xD5, 0xDD, 0xDF, 0xFF};
@@ -139,10 +129,10 @@ void gameCheckPauseToggle(GameMode nextMode) {
 }
 
 void gameModeTitleDraw() {
-    frogboy::printRomString(64 - sizeof(titleText) / 2 * 8, 8, spritesBitmap, titleText, 1);
-    frogboy::printRomString(128 - sizeof(pressStartText) * 8, 24, spritesBitmap, pressStartText, 1);
+    textPrintCenter(64, 8, TEXT_TYPE_TITLE, 1);
+    textPrintRight(128, 24, TEXT_TYPE_PRESS_START, 1);
     spriteDraw(8, 20, player.timer % 32 < 16 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2, SPRITE_FLAG_HFLIP);
-    frogboy::printRomString(64 - sizeof(authorText) / 2 * 8, 48, spritesBitmap, authorText, 1);
+    textPrintCenter(64, 48, TEXT_TYPE_AUTHOR, 1);
 }
 
 void gameModeTitleUpdate() {
@@ -200,10 +190,10 @@ void gameModeActiveUpdate() {
 
 void gameModePauseDraw() {
     gameModeActiveDraw();
-    for(uint8_t i = 0; i != sizeof(pauseText) + 1; ++i) {
+    for(uint8_t i = 0; i != textLength(TEXT_TYPE_PAUSED) + 1; ++i) {
         frogboy::drawTile(32 + i * 8, 24, spritesBitmap, 0x4A, 0, false, false);
     }
-    frogboy::printRomString(40, 24, spritesBitmap, pauseText, 1);
+    textPrintCenter(64, 24, TEXT_TYPE_PAUSED, 1);
 }
 
 void gameModePauseUpdate() {

@@ -88,7 +88,15 @@ const uint8_t blockSprite1[] FROGBOY_ROM_DATA = {
     0x08, 0x08, SPRITE_FLAG_HFLIP | SPRITE_FLAG_VFLIP, 0x6A,
 };
 
-const uint8_t* const spriteAddresses[SPRITE_TYPE_COUNT] FROGBOY_ROM_DATA = {
+const uint8_t eggSprite1[] FROGBOY_ROM_DATA = {
+    0x04, 0x10, 0x10,
+    0x00, 0x00, 0, 0x8A,
+    0x08, 0x00, SPRITE_FLAG_HFLIP, 0x8A,
+    0x00, 0x08, 0, 0x9A,
+    0x08, 0x08, SPRITE_FLAG_HFLIP, 0x9A,
+};
+
+const uint8_t* const spritePointers[SPRITE_TYPE_COUNT] FROGBOY_ROM_DATA = {
     playerSprite1,
     playerSprite2,
     fireballSprite1,
@@ -98,29 +106,32 @@ const uint8_t* const spriteAddresses[SPRITE_TYPE_COUNT] FROGBOY_ROM_DATA = {
     walkerSprite2,
     doorSprite1,
     blockSprite1,
+    eggSprite1,
 };
 
 void spriteDraw(int16_t x, int16_t y, SpriteType sprite, uint8_t flags) {
-    const uint8_t* data = frogboy::readRom<const uint8_t*>(spriteAddresses + sprite);
+    if(sprite < SPRITE_TYPE_COUNT) {
+        const uint8_t* data = frogboy::readRom<const uint8_t*>(spritePointers + sprite);
     
-    uint8_t len = frogboy::readRom<uint8_t>(data++);
-    uint8_t w = frogboy::readRom<uint8_t>(data++);
-    uint8_t h = frogboy::readRom<uint8_t>(data++);
+        uint8_t len = frogboy::readRom<uint8_t>(data++);
+        uint8_t w = frogboy::readRom<uint8_t>(data++);
+        uint8_t h = frogboy::readRom<uint8_t>(data++);
 
-    for(uint8_t i = 0; i != len; ++i) {
-        uint8_t xofs = frogboy::readRom<uint8_t>(data++);
-        uint8_t yofs = frogboy::readRom<uint8_t>(data++);
-        uint8_t attr = frogboy::readRom<uint8_t>(data++);
-        uint8_t tile = frogboy::readRom<uint8_t>(data++);
-        uint8_t xorattr = attr ^ flags;
+        for(uint8_t i = 0; i != len; ++i) {
+            uint8_t xofs = frogboy::readRom<uint8_t>(data++);
+            uint8_t yofs = frogboy::readRom<uint8_t>(data++);
+            uint8_t attr = frogboy::readRom<uint8_t>(data++);
+            uint8_t tile = frogboy::readRom<uint8_t>(data++);
+            uint8_t xorattr = attr ^ flags;
 
-        int16_t tx = x + ((flags & SPRITE_FLAG_HFLIP) != 0 ? w - xofs - 8 : xofs);
-        int16_t ty = y + ((flags & SPRITE_FLAG_VFLIP) != 0 ? h - yofs - 8 : yofs);
-        bool hflip = (xorattr & SPRITE_FLAG_HFLIP) != 0;
-        bool vflip = (xorattr & SPRITE_FLAG_VFLIP) != 0;
-        bool invert = (xorattr & SPRITE_FLAG_COLOR_INVERT) != 0;
+            int16_t tx = x + ((flags & SPRITE_FLAG_HFLIP) != 0 ? w - xofs - 8 : xofs);
+            int16_t ty = y + ((flags & SPRITE_FLAG_VFLIP) != 0 ? h - yofs - 8 : yofs);
+            bool hflip = (xorattr & SPRITE_FLAG_HFLIP) != 0;
+            bool vflip = (xorattr & SPRITE_FLAG_VFLIP) != 0;
+            bool invert = (xorattr & SPRITE_FLAG_COLOR_INVERT) != 0;
 
-        frogboy::drawTile(tx, ty, spritesBitmap, tile, invert ? 1 : 0, hflip, vflip);
-        frogboy::drawTile(tx, ty, spritesBitmap + 2048, tile, invert ? 0 : 1, hflip, vflip);        
+            frogboy::drawTile(tx, ty, spritesBitmap, tile, invert ? 1 : 0, hflip, vflip);
+            frogboy::drawTile(tx, ty, spritesBitmap + 2048, tile, invert ? 0 : 1, hflip, vflip);        
+        }
     }
 }

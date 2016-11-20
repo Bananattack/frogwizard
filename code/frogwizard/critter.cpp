@@ -9,6 +9,7 @@
 #include "map.h"
 #include "hitbox.h"
 #include "game.h"
+#include "text.h"
 
 enum {
     CRITTER_SPAWN_MAX = 64,
@@ -317,9 +318,39 @@ void blockUpdate(Entity* ent, Critter* critter) {
     }
 }
 
+void labelInit(Entity* ent, Critter* critter) {
+    ent->collisionCategory = COLLISION_CATEGORY_ZONE;
+    ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS | ENT_CTRL_FLAG_IGNORE_SLOPES;
+    ent->drawFlags |= ENT_DRAW_FLAG_TEXT;
+    ent->sprite = critter->data;
+}
+
+void labelUpdate(Entity* ent, Critter* critter) {}
+
+void eggInit(Entity* ent, Critter* critter) {
+    static_cast<void>(critter);
+    ent->hitbox = HITBOX_TYPE_16x16;
+    ent->sprite = SPRITE_TYPE_EGG;
+    ent->collisionCategory = COLLISION_CATEGORY_ZONE;
+    ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS | ENT_CTRL_FLAG_IGNORE_SLOPES;
+
+    // TODO: despawn immediately if collected already
+}
+
+void eggUpdate(Entity* ent, Critter* critter) {
+    if(entityCollide(ent, -1, &ents[ENT_OFFSET_PLAYER], -1)) {
+        frogboy::playTone(600, 10);
+        entityRemove(ent);
+
+        // TODO: track collection
+    }
+}
+
+
 const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     0,
     3,
+    0,
     0,
     0,
 };
@@ -329,6 +360,7 @@ const uint8_t critterLayer[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     1,
     0,
     1,
+    0,
 };
 
 const bool critterCanHibernate[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
@@ -336,6 +368,7 @@ const bool critterCanHibernate[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     false,
     false,
     true,
+    false,
 };
 
 const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
@@ -343,6 +376,8 @@ const CritterHandler critterInitHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
     walkerInit,
     doorInit,
     blockInit,
+    labelInit,
+    eggInit,
 };
 
 const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA = {
@@ -350,6 +385,8 @@ const CritterHandler critterUpdateHandler[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA =
     walkerUpdate,
     doorUpdate,
     blockUpdate,
+    labelUpdate,
+    eggUpdate,
 };
 
 const uint8_t FROGBOY_ROM_DATA grasslandSpawnData[] = {
@@ -363,6 +400,8 @@ const uint8_t FROGBOY_ROM_DATA grasslandSpawnData[] = {
 
 const uint8_t houseSpawnData[] FROGBOY_ROM_DATA = {
     2, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_HOUSE_GRASSLAND,
+    2, 1, CRITTER_TYPE_LABEL, TEXT_TYPE_FIND_EGG,
+    4, 2, CRITTER_TYPE_EGG, TEXT_TYPE_FIND_EGG,
 };
 
 const uint8_t house2SpawnData[] FROGBOY_ROM_DATA = {

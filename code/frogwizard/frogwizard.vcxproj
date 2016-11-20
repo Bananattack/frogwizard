@@ -156,6 +156,7 @@
     <ClCompile Include="player.cpp" />
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="sprites_bitmap.cpp" />
+    <ClCompile Include="text.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bullet.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="player.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprites_bitmap.h" />
+    <ClInclude Include="text.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="frogwizard.rc" />

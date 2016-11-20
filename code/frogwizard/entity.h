@@ -4,17 +4,27 @@
 #include <stdint.h>
 
 enum EntityCtrlFlags {
+    // Entity should move freely through walls and obstructions.
     ENT_CTRL_FLAG_IGNORE_OBS = 1 << 0,
+    // Entity should move without regard for slope obstructions
     ENT_CTRL_FLAG_IGNORE_SLOPES = 1 << 1,
+    // Allow bullet collisions. (TODO: Maybe move this into collision category instead)
     ENT_CTRL_FLAG_BULLET_TARGET = 1 << 3,
+    // Entity is in use.
     ENT_CTRL_FLAG_ACTIVE = 1 << 7,
 };
 
 enum EntityDrawFlags {
+    // Invert colors.
     ENT_DRAW_FLAG_FLASH = 1 << 0,
+    // Horizontal flip.
     ENT_DRAW_FLAG_HFLIP = 1 << 1,
+    // Vertical flip.
     ENT_DRAW_FLAG_VFLIP = 1 << 2,
-    ENT_DRAW_FLAG_HIDDEN = 1 << 3,
+    // Treat sprite as text ID instead.
+    ENT_DRAW_FLAG_TEXT = 1 << 4,
+    // Omit from rendering.
+    ENT_DRAW_FLAG_HIDDEN = 1 << 7,
 };
 
 enum EntityStatus {

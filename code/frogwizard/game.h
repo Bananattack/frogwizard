@@ -13,6 +13,14 @@ enum DoorType {
     DOOR_TYPE_COUNT,
 };
 
+enum GameMode {
+    GAME_MODE_TITLE,
+    GAME_MODE_ACTIVE,
+    GAME_MODE_PAUSE,
+};
+
+extern GameMode gameMode;
+
 void gameInit();
 void gameEnterDoor(DoorType door);
 bool gameCheckOnScreen(int16_t x, int16_t y, uint8_t borderX, uint8_t borderY);

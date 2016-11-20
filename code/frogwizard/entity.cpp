@@ -2,8 +2,10 @@
 #include <string.h>
 #include "entity.h"
 #include "sprite.h"
+#include "text.h"
 #include "map.h"
 #include "hitbox.h"
+#include "game.h"
 
 Entity ents[ENT_COUNT];
 
@@ -165,20 +167,29 @@ void entityUpdate(Entity* ent) {
 }
 
 void entityDraw(Entity* ent) {
+    uint8_t entityFlags = ent->drawFlags;
     if((ent->controlFlags & ENT_CTRL_FLAG_ACTIVE) != 0
-    && (ent->drawFlags & ENT_DRAW_FLAG_HIDDEN) == 0) {
-        uint8_t entityFlags = ent->drawFlags;
-        uint8_t spriteFlags = 0;
-        if((entityFlags & ENT_DRAW_FLAG_HFLIP) != 0) {
-            spriteFlags |= SPRITE_FLAG_HFLIP;
+    && (entityFlags & ENT_DRAW_FLAG_HIDDEN) == 0) {
+        int16_t x = ent->x / 16 - mapCameraX;
+        int16_t y = ent->y / 16 - mapCameraY;
+
+        if((entityFlags & ENT_DRAW_FLAG_TEXT) != 0) {
+            if(gameMode != GAME_MODE_PAUSE) {
+                textPrint(x, y, (TextType) ent->sprite, 1);
+            }
+        } else {
+            uint8_t spriteFlags = 0;
+            if((entityFlags & ENT_DRAW_FLAG_HFLIP) != 0) {
+                spriteFlags |= SPRITE_FLAG_HFLIP;
+            }
+            if((entityFlags & ENT_DRAW_FLAG_VFLIP) != 0) {
+                spriteFlags |= SPRITE_FLAG_VFLIP;
+            }
+            if((entityFlags & ENT_DRAW_FLAG_FLASH) != 0) {
+                spriteFlags |= SPRITE_FLAG_COLOR_INVERT;
+            }
+            spriteDraw(x, y, (SpriteType) ent->sprite, spriteFlags);
         }
-        if((entityFlags & ENT_DRAW_FLAG_VFLIP) != 0) {
-            spriteFlags |= SPRITE_FLAG_VFLIP;
-        }
-        if((entityFlags & ENT_DRAW_FLAG_FLASH) != 0) {
-            spriteFlags |= SPRITE_FLAG_COLOR_INVERT;
-        }        
-        spriteDraw(ent->x / 16 - mapCameraX, ent->y / 16 - mapCameraY, (SpriteType) ent->sprite, spriteFlags);
     }
 }
 
