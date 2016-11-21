@@ -30,7 +30,7 @@ namespace {
     const uint8_t houseSpawnData[] FROGBOY_ROM_DATA = {
         2, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_HOUSE_GRASSLAND,
         2, 1, CRITTER_TYPE_LABEL, TEXT_TYPE_FIND_EGG,
-        4, 2, CRITTER_TYPE_EGG, TEXT_TYPE_FIND_EGG,
+        4, 2, CRITTER_TYPE_EGG, 0,
     };
 
     const uint8_t house2SpawnData[] FROGBOY_ROM_DATA = {

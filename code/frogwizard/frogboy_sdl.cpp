@@ -1,9 +1,11 @@
 #ifdef FROGBOY_SDL
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
 #include <SDL.h>
+#include <string>
 
 #include "frogboy.h"
 
@@ -385,6 +387,57 @@ namespace frogboy {
 
     int getRandom(int min, int max) {
         return rand() % (max - min + 1) + min;
+    }
+
+
+
+    struct Save {
+        FILE* file;
+    };
+
+    Save* saveOpen(SaveOpenMode mode) {
+        char* prefPath = SDL_GetPrefPath("eggboycolor", FROGBOY_APPNAME);
+        if(prefPath != nullptr) {
+            std::string path(prefPath);
+            SDL_free(prefPath);
+
+            path += FROGBOY_APPNAME;
+            path += ".sav";
+
+            Save* save = new Save();
+            if(save != nullptr) {
+                FILE* f = nullptr;
+                switch(mode) {
+                    case SAVE_OPEN_MODE_READ: f = fopen(path.c_str(), "rb"); break;
+                    case SAVE_OPEN_MODE_WRITE: f = fopen(path.c_str(), "wb"); break;                    
+                }
+
+                if(f != nullptr) {
+                    save->file = f;
+                    return save;
+                }
+
+                delete save;
+            }
+        }
+        return nullptr;
+    }
+
+    void saveReadBytes(Save* save, uint16_t length, void* data) {
+        if(data != nullptr) {
+            fread(data, length, 1, save->file);
+        } else {
+            fseek(save->file, length, SEEK_CUR);
+        }
+    }
+
+    void saveWriteBytes(Save* save, uint16_t length, const void* data) {
+        fwrite(data, length, 1, save->file);
+    }
+        
+    void saveClose(Save* save) {
+        fclose(save->file);
+        delete save;
     }
 }
 #endif

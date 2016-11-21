@@ -10,6 +10,7 @@
 #include "hitbox.h"
 #include "camera.h"
 #include "spawn.h"
+#include "save.h"
 
 typedef void (*CritterHandler)(Entity* ent, Critter* critter);
 extern const uint8_t critterMaxHP[CRITTER_TYPE_COUNT] FROGBOY_ROM_DATA;
@@ -185,9 +186,8 @@ void doorUpdate(Entity* ent, Critter* critter) {
     if(!player.status.usedDoor
     && ent->collide(-1, &Entity::data[ENT_OFFSET_PLAYER], -1)
     && frogboy::isPressed(frogboy::BUTTON_UP)) {
-        frogboy::playTone(390, 10);
         player.status.usedDoor = true;
-        player.status.nextMap = critter->metadata;
+        player.status.nextDoor = critter->metadata;
     }
 }
 
@@ -277,15 +277,18 @@ void eggInit(Entity* ent, Critter* critter) {
     ent->collisionCategory = COLLISION_CATEGORY_ZONE;
     ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS | ENT_CTRL_FLAG_IGNORE_SLOPES;
 
-    // TODO: despawn immediately if collected already
+    // Despawn immediately if collected already
+    if((player.status.eggs[critter->metadata / 8] & (1 << (critter->metadata % 8))) != 0) {
+        critter->remove(ent);
+    }
 }
 
 void eggUpdate(Entity* ent, Critter* critter) {
     if(ent->collide(-1, &Entity::data[ENT_OFFSET_PLAYER], -1)) {
+        player.status.eggs[critter->metadata / 8] |= 1 << (critter->metadata % 8);
         frogboy::playTone(600, 10);
-        ent->remove();
-
-        // TODO: track collection
+        critter->remove(ent);
+        save::save();
     }
 }
 

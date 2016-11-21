@@ -2,6 +2,7 @@
 
 #include "frogboy.h"
 #include "player.h"
+#include "door.h"
 #include "sprite.h"
 #include "bullet.h"
 #include "hitbox.h"
@@ -46,7 +47,8 @@ void Player::initSystem() {
     player.status.hp = PLAYER_MAX_HP_START;
     player.status.maxHP = PLAYER_MAX_HP_START;
     player.status.maxShotCount = PLAYER_SHOOT_MAX_SHOTS;
-    player.status.nextMap = 0xFF;
+    player.status.lastDoor = DOOR_TYPE_START;
+    player.status.nextDoor = 0xFF;
     player.status.dir = true;
     player.status.usedDoor = false;
 }

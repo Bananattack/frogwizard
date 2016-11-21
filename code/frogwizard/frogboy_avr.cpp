@@ -100,6 +100,47 @@ namespace frogboy {
         return random(min, max + 1);
     }
 
+    struct Save {
+        bool open;
+        int address;
+    };
+
+    Save saveHandle;
+
+    Save* saveOpen(SaveOpenMode mode) {
+        if(!saveHandle.open) {
+            saveHandle.open = true;
+            saveHandle.address = EEPROM_STORAGE_SPACE_START;
+            return &saveHandle;
+        }
+
+        return nullptr;        
+    }
+
+    void saveReadBytes(Save* save, uint16_t length, void* data) {
+        if(data != nullptr) {
+            char* ptr = static_cast<char*>(data);
+            while(length != 0) {
+                *ptr++ = EEPROM.read(saveHandle.address++);
+                length--;
+            }
+        } else {
+            saveHandle.address += length;
+        }
+    }
+
+    void saveWriteBytes(Save* save, uint16_t length, const void* data) {
+        const char* ptr = static_cast<const char*>(data);
+        while(length != 0) {
+            EEPROM.write(saveHandle.address++, *ptr++);
+            length--;
+        }
+    }
+        
+    void saveClose(Save* save) {
+        saveHandle.open = false;
+    }
+
     template<> char readRom(const char* ptr) {
         return static_cast<char>(pgm_read_byte(ptr));
     }
@@ -114,6 +155,6 @@ namespace frogboy {
 
     template<> bool readRom(const bool* ptr) {
         return static_cast<bool>(pgm_read_byte(ptr));
-    }    
+    }        
 }
 #endif

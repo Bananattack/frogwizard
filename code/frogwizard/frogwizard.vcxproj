@@ -95,7 +95,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>FROGBOY_SDL;FROGBOY_HAS_MAIN;main=SDL_main;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>FROGBOY_SDL;FROGBOY_HAS_MAIN;_CRT_SECURE_NO_DEPRECATE;main=SDL_main;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>C:\Development\C++\frogwizard\code\sdl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -156,6 +156,7 @@
     <ClCompile Include="map.cpp" />
     <ClCompile Include="particle.cpp" />
     <ClCompile Include="player.cpp" />
+    <ClCompile Include="save.cpp" />
     <ClCompile Include="spawn.cpp" />
     <ClCompile Include="sprite.cpp" />
     <ClCompile Include="sprites_bitmap.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="map.h" />
     <ClInclude Include="particle.h" />
     <ClInclude Include="player.h" />
+    <ClInclude Include="save.h" />
     <ClInclude Include="spawn.h" />
     <ClInclude Include="sprite.h" />
     <ClInclude Include="sprites_bitmap.h" />

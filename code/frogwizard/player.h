@@ -3,11 +3,18 @@
 
 #include "entity.h"
 
+enum {
+    EGG_COUNT = 8,
+    EGG_BIT_ARRAY_SIZE = (EGG_COUNT + 7) / 8,
+};
+
 struct PlayerStatus {
     uint8_t hp;
     uint8_t maxHP;
     uint8_t maxShotCount;
-    uint8_t nextMap;
+    uint8_t nextDoor;
+    uint8_t lastDoor;
+    uint8_t eggs[EGG_BIT_ARRAY_SIZE];
     bool dir;
     bool usedDoor;
 };

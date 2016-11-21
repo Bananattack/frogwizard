@@ -4,14 +4,16 @@
 
 namespace {
     const char titleText[] FROGBOY_ROM_DATA = "F R O G  E G G";
-    const char pressStartText[] FROGBOY_ROM_DATA = "PRESS START";
+    const char newGameText[] FROGBOY_ROM_DATA = "NEW GAME";
+    const char continueText[] FROGBOY_ROM_DATA = "CONTINUE";
     const char authorText[] FROGBOY_ROM_DATA = "BY EGGBOYCOLOR";
     const char pausedText[] FROGBOY_ROM_DATA = "PAUSED";
     const char findEggText[] FROGBOY_ROM_DATA = " COLLECT\n EGGS.";
 
     const char* const textPointers[TEXT_TYPE_COUNT] FROGBOY_ROM_DATA = {
         titleText,
-        pressStartText,
+        newGameText,
+        continueText,
         authorText,
         pausedText,
         findEggText,
@@ -19,7 +21,8 @@ namespace {
 
     const uint8_t textLengths[TEXT_TYPE_COUNT] FROGBOY_ROM_DATA = {
         sizeof(titleText) - 1,
-        sizeof(pressStartText) - 1,
+        sizeof(newGameText) - 1,
+        sizeof(continueText) - 1,
         sizeof(authorText) - 1,
         sizeof(pausedText) - 1,
         sizeof(findEggText) - 1,

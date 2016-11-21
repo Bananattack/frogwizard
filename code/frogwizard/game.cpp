@@ -13,10 +13,14 @@
 #include "door.h"
 #include "spawn.h"
 #include "text.h"
+#include "save.h"
 
 bool pausePressed;
 bool resetPressed;
 GameMode gameMode;
+bool saveFound;
+bool titleCursorPressed;
+uint8_t titleCursor;
 
 uint8_t wipeProgress;
 const uint8_t wipeMasks[] FROGBOY_ROM_DATA = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x11, 0x51, 0x55, 0xD5, 0xDD, 0xDF, 0xFF};
@@ -27,7 +31,9 @@ extern const GameModeHandler gameModeDrawHandlers[] FROGBOY_ROM_DATA;
 
 void gameInit() {
     gameMode = GAME_MODE_TITLE;
-    resetPressed = pausePressed = true;
+    resetPressed = pausePressed = titleCursorPressed = true;
+    saveFound = save::exists();
+    titleCursor = saveFound ? 1 : 0;
 }
 
 void gameDraw() {
@@ -50,6 +56,7 @@ void gameUpdate() {
 }
 
 void gameEnterDoor(DoorType door) {
+    frogboy::playTone(390, 10);
     Entity::initSystem();
     Critter::initSystem();
     Bullet::initSystem();
@@ -81,19 +88,42 @@ void gameCheckPauseToggle(GameMode nextMode) {
 
 void gameModeTitleDraw() {
     text::printCenter(64, 8, TEXT_TYPE_TITLE, 1);
-    text::printRight(128, 24, TEXT_TYPE_PRESS_START, 1);
-    sprite::draw(8, 20, player.instance.moveTimer % 32 < 16 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2, SPRITE_FLAG_HFLIP);
+    text::print(40, 24, TEXT_TYPE_NEW_GAME, 1);
+    if(saveFound) {
+        text::print(40, 32, TEXT_TYPE_CONTINUE, 1);
+    }
+    sprite::draw(8, 24, player.instance.moveTimer % 32 < 16 ? SPRITE_TYPE_PLAYER_1 : SPRITE_TYPE_PLAYER_2, SPRITE_FLAG_HFLIP);
+    frogboy::drawTile(31, 24 + titleCursor * 8, spritesBitmap, 0x40, 1, false, false);
     text::printCenter(64, 48, TEXT_TYPE_AUTHOR, 1);
 }
 
 void gameModeTitleUpdate() {
     player.instance.moveTimer++;
-    if(!resetPressed && frogboy::anyPressed(frogboy::BUTTON_MASK_PAUSE | frogboy::BUTTON_MASK_JUMP | frogboy::BUTTON_MASK_SHOOT)) {
+    if(frogboy::anyPressed(frogboy::BUTTON_MASK_UP | frogboy::BUTTON_MASK_DOWN)) {
+        if(!titleCursorPressed && saveFound) {
+            titleCursor ^= 1;
+            titleCursorPressed = true;
+            frogboy::playTone(3000, 50);
+        }
+    } else {
+        titleCursorPressed = false;
+    }
+
+    if(!resetPressed && frogboy::isPressed(frogboy::BUTTON_JUMP)) {
         gameMode = GAME_MODE_ACTIVE;
 
+        // Initialize state before loading the player's save.
         player.initSystem();
+
+        if(titleCursor == 1) {
+            // If we fail to load, reset to new game anyways.
+            if(!save::load()) {
+                player.initSystem();
+            }
+        }
+
         Map::initSystem();
-        gameEnterDoor(DOOR_TYPE_START);
+        gameEnterDoor(static_cast<DoorType>(player.status.lastDoor));
         player.instance.shootPressed = player.instance.jumpPressed = true;
         player.update();
     }
@@ -134,9 +164,11 @@ void gameModeActiveUpdate() {
         camera.update(Entity::data[ENT_OFFSET_PLAYER].x / 16 + 8, 0, map.getWidth(), map.getHeight());
     }
 
-    if(player.status.nextMap != 0xFF) {
-        gameEnterDoor(static_cast<DoorType>(player.status.nextMap));
-        player.status.nextMap = 0xFF;
+    if(player.status.nextDoor != 0xFF) {
+        gameEnterDoor(static_cast<DoorType>(player.status.nextDoor));
+        player.status.lastDoor = player.status.nextDoor;
+        player.status.nextDoor = 0xFF;
+        save::save();
     }
 }
 

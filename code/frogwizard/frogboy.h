@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-#define FROGBOY_APPNAME "Frog Egg"
+#define FROGBOY_AUTHOR "eggboycolor"
+#define FROGBOY_APPNAME "frog egg"
 
 namespace frogboy {
     enum {
@@ -50,6 +51,17 @@ namespace frogboy {
     bool isPressed(Button code);
     bool anyPressed(uint8_t buttonMask);
     int getRandom(int min, int max);
+
+    enum SaveOpenMode {
+        SAVE_OPEN_MODE_READ,
+        SAVE_OPEN_MODE_WRITE,
+    };
+
+    struct Save;
+    Save* saveOpen(SaveOpenMode mode);
+    void saveReadBytes(Save* save, uint16_t length, void* data);
+    void saveWriteBytes(Save* save, uint16_t length, const void* data);
+    void saveClose(Save* save);
 
     template<typename T> T readRom(const T* ptr);
 }
