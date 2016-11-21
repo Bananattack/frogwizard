@@ -174,7 +174,7 @@ void gameModeActiveUpdate() {
 
 void gameModePauseDraw() {
     gameModeActiveDraw();
-    for(uint8_t i = 0; i != text::length(TEXT_TYPE_PAUSED) + 1; ++i) {
+    for(uint8_t i = 0; i != text::length(TEXT_TYPE_PAUSED) + 2; ++i) {
         frogboy::drawTile(32 + i * 8, 24, spritesBitmap, 0x4A, 0, false, false);
     }
     text::printCenter(64, 24, TEXT_TYPE_PAUSED, 1);
