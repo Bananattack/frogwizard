@@ -38,18 +38,19 @@ namespace {
 
     struct KeyCode {
         SDL_Keycode code;
-        uint16_t mod;
+        bool ctrl;
+        bool alt;
     };
 
     const KeyCode keycodes[static_cast<size_t>(frogboy::BUTTON_COUNT)] = {
-        {SDLK_LEFT, 0},
-        {SDLK_RIGHT, 0},
-        {SDLK_UP, 0},
-        {SDLK_DOWN, 0},
-        {SDLK_z, 0},
-        {SDLK_x, 0},
-        {SDLK_RETURN, 0},
-        {SDLK_r, KMOD_CTRL},
+        {SDLK_LEFT, false, false},
+        {SDLK_RIGHT, false, false},
+        {SDLK_UP, false, false},
+        {SDLK_DOWN, false, false},
+        {SDLK_z, false, false},
+        {SDLK_x, false, false},
+        {SDLK_RETURN, false, false},
+        {SDLK_r, true, false},
     };
 
     SDL_AudioSpec audioSpecRequested;
@@ -237,31 +238,37 @@ namespace frogboy {
                         windowOpen = false;
                         break;
                     case SDL_KEYDOWN: {
-                        SDL_Keycode sym = e.key.keysym.sym;
-                        uint16_t mod = e.key.keysym.mod & (KMOD_CTRL | KMOD_ALT);
+                        bool handled = false;
 
-                        for(size_t i = 0; i != BUTTON_COUNT; ++i) {
-                            const auto& keycode = keycodes[i];
-                            if(((keycode.mod == 0 && mod == 0)
-                                || (mod & keycode.mod) != 0)
-                            && sym == keycode.code) {
-                                pressed[i] = true;
-                                break;
-                            }
-                        }
-
-                        if(e.key.repeat == 0
+                        if(!handled
+                        && e.key.repeat == 0
                         && ((e.key.keysym.mod & KMOD_ALT) != 0 && e.key.keysym.sym == SDLK_RETURN
                             || e.key.keysym.sym == SDLK_F11)) {
+                            handled = true;
                             toggleFullscreen();
                         }
-
-                        if(e.key.repeat == 0
+                        if(!handled
+                        && e.key.repeat == 0
                         && e.key.keysym.sym == SDLK_ESCAPE) {
+                            handled = true;
                             if(windowFullscreen) {
                                 toggleFullscreen();
                             }
                         }
+
+                        for(size_t i = 0; i != BUTTON_COUNT && !handled; ++i) {
+                            const auto& keycode = keycodes[i];
+                            if((!keycode.ctrl && (e.key.keysym.mod & KMOD_CTRL) == 0
+                                || keycode.ctrl && (e.key.keysym.mod & KMOD_CTRL) != 0)
+                            && (!keycode.alt && (e.key.keysym.mod & KMOD_ALT) == 0
+                                || keycode.alt && (e.key.keysym.mod & KMOD_ALT) != 0)
+                            && e.key.keysym.sym == keycode.code) {
+                                pressed[i] = true;
+                                handled = true;
+                                break;
+                            }
+                        }
+
                         break;
                     }
                     case SDL_KEYUP: {
@@ -270,8 +277,10 @@ namespace frogboy {
 
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
                             const auto& keycode = keycodes[i];
-                            if(((keycode.mod == 0 && mod == 0)
-                                || (mod & keycode.mod) != 0)
+                            if((!keycode.ctrl
+                                || keycode.ctrl && (e.key.keysym.mod & KMOD_CTRL) != 0)
+                            && (!keycode.alt
+                                || keycode.alt && (e.key.keysym.mod & KMOD_ALT) != 0)
                             && sym == keycode.code) {
                                 pressed[i] = false;
                                 break;
@@ -388,8 +397,6 @@ namespace frogboy {
     int getRandom(int min, int max) {
         return rand() % (max - min + 1) + min;
     }
-
-
 
     struct Save {
         FILE* file;
