@@ -118,14 +118,14 @@ void coinInit(Entity* ent, Critter* critter) {}
 void coinUpdate(Entity* ent, Critter* critter) {}
 
 enum {
-    WALKER_ACCEL = 2,
-    WALKER_MAX_SPEED = 8,
+    WALKER_ACCEL = 1,
+    WALKER_MAX_SPEED = 6,
 };
 
 void walkerInit(Entity* ent, Critter* critter) {
     Entity* playerEnt = &Entity::data[ENT_OFFSET_PLAYER];
 
-    ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
+    ent->hitbox = HITBOX_TYPE_WALKER;
     ent->controlFlags |= ENT_CTRL_FLAG_BULLET_TARGET;
 
     bool faceLeft = playerEnt->x < ent->x;
@@ -176,7 +176,7 @@ void walkerUpdate(Entity* ent, Critter* critter) {
 
 void doorInit(Entity* ent, Critter* critter) {
     static_cast<void>(critter);
-    ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
+    ent->hitbox = HITBOX_TYPE_16x16;
     ent->sprite = SPRITE_TYPE_DOOR;
     ent->collisionCategory = COLLISION_CATEGORY_ZONE;
     ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS | ENT_CTRL_FLAG_IGNORE_SLOPES;
@@ -225,7 +225,7 @@ static bool blockCheckPushed(Entity* ent, Entity* playerEnt) {
             0,
             x,
             y,
-            (HitboxType) HITBOX_TYPE_PUSH_DETECTION,
+            (HitboxType) HITBOX_TYPE_16x16,
             0);
     }
     return false;
@@ -272,7 +272,7 @@ void labelUpdate(Entity* ent, Critter* critter) {}
 
 void eggInit(Entity* ent, Critter* critter) {
     static_cast<void>(critter);
-    ent->hitbox = HITBOX_TYPE_16x16;
+    ent->hitbox = HITBOX_TYPE_EGG;
     ent->sprite = SPRITE_TYPE_EGG;
     ent->collisionCategory = COLLISION_CATEGORY_ZONE;
     ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_OBS | ENT_CTRL_FLAG_IGNORE_SLOPES;

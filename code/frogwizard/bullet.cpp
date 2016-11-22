@@ -30,7 +30,7 @@ Bullet* Bullet::add(int16_t x, int16_t y, bool dir, BulletType type) {
         memset(bullet, 0, sizeof(Bullet));
         bullet->type = type;
         bullet->dir = dir;
-        ent->hitbox = HITBOX_TYPE_BULLET_16x16;
+        ent->hitbox = HITBOX_TYPE_FIREBALL;
         ent->controlFlags |= ENT_CTRL_FLAG_IGNORE_SLOPES;
         ent->drawFlags |= (dir ? ENT_DRAW_FLAG_HFLIP : 0);
         frogboy::readRom<BulletHandler>(&bulletInitHandler[bullet->type])(ent, bullet);

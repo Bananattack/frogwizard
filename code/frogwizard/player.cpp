@@ -61,7 +61,7 @@ void Player::add(int16_t x, int16_t y) {
 
         player.instance.landed = true;
         ent->sprite = SPRITE_TYPE_PLAYER_1;
-        ent->hitbox = HITBOX_TYPE_HUMAN_16x16;
+        ent->hitbox = HITBOX_TYPE_PLAYER;
         if(player.status.dir) {
             ent->drawFlags |= ENT_DRAW_FLAG_HFLIP;
         }
@@ -192,13 +192,13 @@ void Player::update() {
             if(!instance.landed) {
                 ent->controlFlags &= ~ENT_CTRL_FLAG_IGNORE_SLOPES;
                 instance.landed = true;
-                ent->yspd = 0;
 
-                if(instance.fallTimer > 4) {                    
+                if(instance.fallTimer > 4) {
                     Particle::addStar(ent->x + 10 * 16, ent->y + 4 * 16);
                     frogboy::playTone(200, 10);
                 }
                 instance.fallTimer = 0;
+                ent->yspd = 0;
             }
         }
     }

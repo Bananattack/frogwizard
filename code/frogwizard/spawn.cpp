@@ -22,9 +22,10 @@ namespace {
         10, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE,
         16, 2, CRITTER_TYPE_BLOCK, 0,
         24, 1, CRITTER_TYPE_WALKER, 0,
-        49, 1, CRITTER_TYPE_BLOCK, 0,
         40, 1, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE2,
-        67, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
+        46, 0, CRITTER_TYPE_EGG, 1,
+        51, 1, CRITTER_TYPE_BLOCK, 0,
+        69, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_GRASSLAND_HOUSE3,
     };
 
     const uint8_t houseSpawnData[] FROGBOY_ROM_DATA = {
@@ -34,11 +35,13 @@ namespace {
     };
 
     const uint8_t house2SpawnData[] FROGBOY_ROM_DATA = {
+        3, 2, CRITTER_TYPE_EGG, 2,
         5, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_HOUSE2_GRASSLAND,
     };
 
     const uint8_t house3SpawnData[] FROGBOY_ROM_DATA = {
         2, 2, CRITTER_TYPE_DOOR, DOOR_TYPE_HOUSE3_GRASSLAND,
+        35, 2, CRITTER_TYPE_EGG, 3,
     };
 
     const uint8_t spawnCounts[MAP_TYPE_COUNT] FROGBOY_ROM_DATA = {
