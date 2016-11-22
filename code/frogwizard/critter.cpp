@@ -119,7 +119,7 @@ void coinUpdate(Entity* ent, Critter* critter) {}
 
 enum {
     WALKER_ACCEL = 1,
-    WALKER_MAX_SPEED = 6,
+    WALKER_MAX_SPEED = 8,
 };
 
 void walkerInit(Entity* ent, Critter* critter) {
