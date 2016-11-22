@@ -11,7 +11,7 @@ namespace {
         5, 2, MAP_TYPE_HOUSE2,
         40, 1, MAP_TYPE_GRASSLAND,
         2, 2, MAP_TYPE_HOUSE3,
-        67, 2, MAP_TYPE_GRASSLAND,
+        69, 2, MAP_TYPE_GRASSLAND,
     };
 }
 
