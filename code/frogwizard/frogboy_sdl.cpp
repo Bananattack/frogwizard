@@ -273,15 +273,10 @@ namespace frogboy {
                     }
                     case SDL_KEYUP: {
                         SDL_Keycode sym = e.key.keysym.sym;
-                        uint16_t mod = e.key.keysym.mod & (KMOD_CTRL | KMOD_ALT);
 
                         for(size_t i = 0; i != BUTTON_COUNT; ++i) {
                             const auto& keycode = keycodes[i];
-                            if((!keycode.ctrl
-                                || keycode.ctrl && (e.key.keysym.mod & KMOD_CTRL) != 0)
-                            && (!keycode.alt
-                                || keycode.alt && (e.key.keysym.mod & KMOD_ALT) != 0)
-                            && sym == keycode.code) {
+                            if(sym == keycode.code) {
                                 pressed[i] = false;
                                 break;
                             }
